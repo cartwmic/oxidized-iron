@@ -11,3 +11,4 @@ axum = { version = "0.7.2", features = ["tracing"] }
 serde = { version = "1.0.193", features = ["derive"] }
 tokio = { version = "1.35.0", features = ["full", "tracing"] }
 tracing-subscriber = "0.3.18"
+uuid = { version = "1.6.1", features = ["serde", "v4", "fast-rng", "macro-diagnostics"] }

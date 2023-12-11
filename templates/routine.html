@@ -1,0 +1,14 @@
+<tr>
+  <td>{{ routine.id }}</td>
+  <td>
+    <button class="btn" hx-patch="/routine/{{ routine.id }}" hx-target="closest body">
+      Edit
+    </button>
+  </td>
+  <td>
+    <button class="btn" hx-delete="/routine/{{ routine.id }}" hx-confirm="Delete Routine {{ routine.id }}?"
+      hx-target="closest body">
+      Delete
+    </button>
+  </td>
+</tr>

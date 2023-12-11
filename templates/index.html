@@ -3,4 +3,25 @@
 
 {% block content %}
 <h1>Oxidize RP</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for routine in routines %}
+    {% include "routine.html" %}
+    {% endfor %}
+    <tr>
+      <td>
+        <button class="btn" hx-post="/routine" hx-target="closest body">
+          Add
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
 {% endblock %}
