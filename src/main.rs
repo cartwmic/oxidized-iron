@@ -1,9 +1,13 @@
+use std::sync::{Arc, Mutex};
+
 use askama::Template;
 use axum::{
+    extract::Json,
     extract::Path,
+    extract::State,
     http::StatusCode,
     response::{Html, IntoResponse},
-    routing::{delete, get, patch, post, put},
+    routing::{delete, get, post, put},
     Router,
 };
 use serde::{Deserialize, Serialize};
@@ -14,71 +18,97 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
+    let routine_1 = Routine { id: Uuid::new_v4() };
+    let routine_2 = Routine { id: Uuid::new_v4() };
+    let my_state = Arc::new(Mutex::new(MyState {
+        routines: vec![routine_1, routine_2],
+    }));
+
     // build our application with a route
     let app = Router::new()
-        // `GET /` goes to `root`
         .route("/", get(root))
         .route("/routine/:routine_id", put(edit_routine))
         .route("/routine/:routine_id", delete(delete_routine))
-        .route("/routine", post(add_routine));
+        .route("/routine/create", get(create_routine))
+        .route("/routine", post(add_routine))
+        .with_state(my_state);
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
-// basic handler that responds with a static string
-async fn root() -> impl IntoResponse {
-    let template = IndexTemplate {
-        routines: vec![
-            Routine { id: Uuid::new_v4() },
-            Routine { id: Uuid::new_v4() },
-        ],
-    };
+async fn root(State(my_state): State<Arc<Mutex<MyState>>>) -> impl IntoResponse {
+    let mut inner = my_state.lock().unwrap();
+
+    let routines: Vec<&Routine> = inner.routines.iter().collect();
+
+    let template = IndexTemplate { routines };
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
 
-async fn edit_routine(Path(routine_id): Path<Uuid>) -> impl IntoResponse {
-    let template = IndexTemplate {
-        routines: vec![
-            Routine { id: Uuid::new_v4() },
-            Routine { id: Uuid::new_v4() },
-        ],
-    };
+async fn create_routine() -> impl IntoResponse {
+    let template = CreateRoutine {};
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
 
-async fn delete_routine(Path(routine_id): Path<Uuid>) -> impl IntoResponse {
-    let template = IndexTemplate {
-        routines: vec![
-            Routine { id: Uuid::new_v4() },
-            Routine { id: Uuid::new_v4() },
-        ],
-    };
+async fn edit_routine(
+    State(my_state): State<Arc<Mutex<MyState>>>,
+    Path(routine_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let mut inner = my_state.lock().unwrap();
+
+    let routines: Vec<&Routine> = inner.routines.iter().collect();
+
+    let template = IndexTemplate { routines };
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
 
-async fn add_routine() -> impl IntoResponse {
-    let template = IndexTemplate {
-        routines: vec![
-            Routine { id: Uuid::new_v4() },
-            Routine { id: Uuid::new_v4() },
-        ],
-    };
+async fn delete_routine(
+    State(my_state): State<Arc<Mutex<MyState>>>,
+    Path(routine_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let mut inner = my_state.lock().unwrap();
+
+    let routines: Vec<&Routine> = inner.routines.iter().collect();
+
+    let template = IndexTemplate { routines };
+    let reply_html = template.render().unwrap();
+    (StatusCode::OK, Html(reply_html).into_response())
+}
+
+async fn add_routine(
+    State(my_state): State<Arc<Mutex<MyState>>>,
+    Json(payload): Json<Routine>,
+) -> impl IntoResponse {
+    let mut inner = my_state.lock().unwrap();
+    inner.routines.push(payload);
+
+    let routines: Vec<&Routine> = inner.routines.iter().collect();
+
+    let template = IndexTemplate { routines };
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct IndexTemplate {
-    routines: Vec<Routine>,
+struct IndexTemplate<'a> {
+    routines: Vec<&'a Routine>,
 }
+
+#[derive(Template)]
+#[template(path = "create_routine.html")]
+struct CreateRoutine {}
 
 #[derive(Serialize, Deserialize)]
 struct Routine {
     id: Uuid,
+}
+
+struct MyState {
+    routines: Vec<Routine>,
 }
