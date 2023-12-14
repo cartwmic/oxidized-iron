@@ -1,4 +1,7 @@
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use askama::Template;
 use axum::{
@@ -18,18 +21,28 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let routine_1 = Routine { id: Uuid::new_v4() };
-    let routine_2 = Routine { id: Uuid::new_v4() };
-    let my_state = Arc::new(Mutex::new(MyState {
-        routines: vec![routine_1, routine_2],
-    }));
+    let routine_1 = Routine {
+        id: Uuid::new_v4(),
+        name: "routine_1".into(),
+        description: "routine_1 desc".into(),
+    };
+    let routine_2 = Routine {
+        id: Uuid::new_v4(),
+        name: "routine_2".into(),
+        description: "routine_2 desc".into(),
+    };
+    let mut routines = HashMap::new();
+    routines.insert(routine_1.id, routine_1);
+    routines.insert(routine_2.id, routine_2);
+    let my_state = Arc::new(Mutex::new(MyState { routines }));
 
     // build our application with a route
     let app = Router::new()
         .route("/", get(root))
         .route("/routine/:routine_id", put(edit_routine))
+        .route("/routine/:routine_id/edit", get(edit_routine_html))
         .route("/routine/:routine_id", delete(delete_routine))
-        .route("/routine/create", get(create_routine))
+        .route("/routine/create", get(create_routine_html))
         .route("/routine", post(add_routine))
         .with_state(my_state);
 
@@ -39,17 +52,23 @@ async fn main() {
 }
 
 async fn root(State(my_state): State<Arc<Mutex<MyState>>>) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
+    let inner = my_state.lock().unwrap();
 
-    let routines: Vec<&Routine> = inner.routines.iter().collect();
+    let routines: Vec<&Routine> = inner.routines.values().into_iter().collect();
 
     let template = IndexTemplate { routines };
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
 
-async fn create_routine() -> impl IntoResponse {
+async fn create_routine_html() -> impl IntoResponse {
     let template = CreateRoutine {};
+    let reply_html = template.render().unwrap();
+    (StatusCode::OK, Html(reply_html).into_response())
+}
+
+async fn edit_routine_html(Path(routine_id): Path<Uuid>) -> impl IntoResponse {
+    let template = EditRoutine { id: routine_id };
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
@@ -57,10 +76,12 @@ async fn create_routine() -> impl IntoResponse {
 async fn edit_routine(
     State(my_state): State<Arc<Mutex<MyState>>>,
     Path(routine_id): Path<Uuid>,
+    Json(routine): Json<Routine>,
 ) -> impl IntoResponse {
     let mut inner = my_state.lock().unwrap();
+    inner.routines.insert(routine_id, routine);
 
-    let routines: Vec<&Routine> = inner.routines.iter().collect();
+    let routines: Vec<&Routine> = inner.routines.values().into_iter().collect();
 
     let template = IndexTemplate { routines };
     let reply_html = template.render().unwrap();
@@ -71,9 +92,9 @@ async fn delete_routine(
     State(my_state): State<Arc<Mutex<MyState>>>,
     Path(routine_id): Path<Uuid>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
+    let inner = my_state.lock().unwrap();
 
-    let routines: Vec<&Routine> = inner.routines.iter().collect();
+    let routines: Vec<&Routine> = inner.routines.values().into_iter().collect();
 
     let template = IndexTemplate { routines };
     let reply_html = template.render().unwrap();
@@ -82,12 +103,15 @@ async fn delete_routine(
 
 async fn add_routine(
     State(my_state): State<Arc<Mutex<MyState>>>,
-    Json(payload): Json<Routine>,
+    Json(mut routine): Json<Routine>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
-    inner.routines.push(payload);
+    let new_routine_id = Uuid::new_v4();
+    routine.id = new_routine_id;
 
-    let routines: Vec<&Routine> = inner.routines.iter().collect();
+    let mut inner = my_state.lock().unwrap();
+    inner.routines.insert(routine.id, routine);
+
+    let routines: Vec<&Routine> = inner.routines.values().into_iter().collect();
 
     let template = IndexTemplate { routines };
     let reply_html = template.render().unwrap();
@@ -101,14 +125,22 @@ struct IndexTemplate<'a> {
 }
 
 #[derive(Template)]
+#[template(path = "edit_routine.html")]
+struct EditRoutine {
+    id: Uuid,
+}
+
+#[derive(Template)]
 #[template(path = "create_routine.html")]
 struct CreateRoutine {}
 
 #[derive(Serialize, Deserialize)]
 struct Routine {
     id: Uuid,
+    name: String,
+    description: String,
 }
 
 struct MyState {
-    routines: Vec<Routine>,
+    routines: HashMap<Uuid, Routine>,
 }

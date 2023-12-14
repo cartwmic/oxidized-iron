@@ -1,7 +1,9 @@
 <tr>
   <td>{{ routine.id }}</td>
+  <td>{{ routine.name }}</td>
+  <td>{{ routine.description }}</td>
   <td>
-    <button class="btn" hx-put="/routine/{{ routine.id }}" hx-target="closest body">
+    <button class="btn" hx-get="/routine/{{ routine.id }}/edit" hx-target="closest body">
       Edit
     </button>
   </td>

@@ -1,5 +1,4 @@
-<form hx-post="/routine" hx-target="closest body" hx-ext="json-enc"
-  hx-vals='{"id": "00000000-0000-0000-0000-000000000000"}'>
+<form hx-put="/routine/{{ id }}" hx-target="closest body" hx-ext="json-enc" hx-vals='{"id": "{{ id }}"}'>
   <label>
     Name
     <input name="name" type="text">
