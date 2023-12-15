@@ -21,19 +21,7 @@ async fn main() {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let routine_1 = Routine {
-        id: Uuid::new_v4(),
-        name: "routine_1".into(),
-        description: "routine_1 desc".into(),
-    };
-    let routine_2 = Routine {
-        id: Uuid::new_v4(),
-        name: "routine_2".into(),
-        description: "routine_2 desc".into(),
-    };
-    let mut routines = HashMap::new();
-    routines.insert(routine_1.id, routine_1);
-    routines.insert(routine_2.id, routine_2);
+    let routines = HashMap::new();
     let my_state = Arc::new(Mutex::new(MyState { routines }));
 
     // build our application with a route
@@ -41,6 +29,7 @@ async fn main() {
         .route("/", get(root))
         .route("/routine/:routine_id", put(edit_routine))
         .route("/routine/:routine_id/edit", get(edit_routine_html))
+        .route("/routine/:routine_id/view", get(view_routine_html))
         .route("/routine/:routine_id", delete(delete_routine))
         .route("/routine/create", get(create_routine_html))
         .route("/routine", post(add_routine))
@@ -69,6 +58,13 @@ async fn create_routine_html() -> impl IntoResponse {
 
 async fn edit_routine_html(Path(routine_id): Path<Uuid>) -> impl IntoResponse {
     let template = EditRoutine { id: routine_id };
+async fn view_routine_html(
+    State(my_state): State<Arc<Mutex<MyState>>>,
+    Path(routine_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let state = my_state.lock().unwrap();
+    let routine = state.routines.get(&routine_id).unwrap().clone();
+    let template = ViewRoutine { routine };
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
@@ -79,11 +75,9 @@ async fn edit_routine(
     Json(routine): Json<Routine>,
 ) -> impl IntoResponse {
     let mut inner = my_state.lock().unwrap();
-    inner.routines.insert(routine_id, routine);
+    inner.routines.insert(routine_id, routine.clone());
 
-    let routines: Vec<&Routine> = inner.routines.values().into_iter().collect();
-
-    let template = IndexTemplate { routines };
+    let template = ViewRoutine { routine };
     let reply_html = template.render().unwrap();
     (StatusCode::OK, Html(reply_html).into_response())
 }
