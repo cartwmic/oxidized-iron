@@ -1,6 +1,6 @@
 <h1>{{ routine.name }}</h1>
 <p>Description: {{ routine.description }}</p>
-<button class="btn" hx-get="/routine/{{routine}}/edit" hx-target="closest body">
+<button class="btn" hx-get="/routine/{{ routine.id }}/edit" hx-target="closest body">
   Edit
 </button>
 <table>

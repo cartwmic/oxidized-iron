@@ -58,6 +58,10 @@ async fn create_routine_html() -> impl IntoResponse {
 
 async fn edit_routine_html(Path(routine_id): Path<Uuid>) -> impl IntoResponse {
     let template = EditRoutine { id: routine_id };
+    let reply_html = template.render().unwrap();
+    (StatusCode::OK, Html(reply_html).into_response())
+}
+
 async fn view_routine_html(
     State(my_state): State<Arc<Mutex<MyState>>>,
     Path(routine_id): Path<Uuid>,
@@ -126,10 +130,16 @@ struct EditRoutine {
 }
 
 #[derive(Template)]
+#[template(path = "view_routine.html")]
+struct ViewRoutine {
+    routine: Routine,
+}
+
+#[derive(Template)]
 #[template(path = "create_routine.html")]
 struct CreateRoutine {}
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 struct Routine {
     id: Uuid,
     name: String,
