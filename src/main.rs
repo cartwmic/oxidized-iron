@@ -92,7 +92,8 @@ async fn delete_routine(
     State(my_state): State<Arc<Mutex<MyState>>>,
     Path(routine_id): Path<Uuid>,
 ) -> impl IntoResponse {
-    let inner = my_state.lock().unwrap();
+    let mut inner = my_state.lock().unwrap();
+    inner.routines.remove(&routine_id);
 
     let routines: Vec<&Routine> = inner.routines.values().into_iter().collect();
 
