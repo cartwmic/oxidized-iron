@@ -1,4 +1,0 @@
-{% extends "create_or_edit_routine.html" %}
-
-{% block form_head %}<form hx-put="/routine/{{ id }}" hx-target="closest body" hx-ext="json-enc"
-  hx-vals='{"id": "{{ id }}"}'>{% endblock %}
