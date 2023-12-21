@@ -42,19 +42,13 @@ async fn index() -> impl IntoResponse {
         view! {
         <html lang="en">
 
-        <head>
-          <script src="https://unpkg.com/htmx.org@1.9.6"
-            integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni"
-            crossorigin="anonymous"></script>
-          <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-          <title>Index</title>
-        </head>
+        <Head></Head>
 
         <body>
-          <h1>Oxidize RP</h1>
-          <div id="content">
-            <button hx-get="/routines" hx-target="closest div" hx-replace-url="true">View Routines</button>
-          </div>
+            <h1>Oxidize RP</h1>
+            <div id="content">
+                <button hx-get="/routines" hx-target="#content" hx-replace-url="true" hx-swap="outerHTML">View Routines</button>
+            </div>
         </body>
 
         </html>
@@ -84,6 +78,7 @@ async fn post_routines(
         {
             let html = leptos::ssr::render_to_string(|| {
                 view! {
+                    <Head></Head>
                     <CreateRoutine></CreateRoutine>
                 }
             })
@@ -99,7 +94,8 @@ async fn post_routines(
 
             let html = leptos::ssr::render_to_string(|| {
                 view! {
-                <Routines routines=routines></Routines>
+                    <Head></Head>
+                    <Routines routines=routines></Routines>
                 }
             })
             .to_string();
@@ -116,7 +112,8 @@ async fn get_routines(State(my_state): State<Arc<Mutex<MyState>>>) -> impl IntoR
 
     let html = leptos::ssr::render_to_string(|| {
         view! {
-          <Routines routines=routines></Routines>
+            <Head></Head>
+            <Routines routines=routines></Routines>
         }
     })
     .to_string();
@@ -127,72 +124,91 @@ async fn get_routines(State(my_state): State<Arc<Mutex<MyState>>>) -> impl IntoR
 #[component]
 fn CreateRoutine() -> impl IntoView {
     view! {
-        <form hx-post="/routines" hx-target="#content" hx-ext="json-enc">
-            <input hidden name="id" value={Uuid::new_v4().to_string()} type="text"></input>
-            <label>
-                Name
-                <input name="name" type="text"></input>
-            </label>
-            <label>
-                Description
-                <input name="description" type="text"></input>
-            </label>
-            <input type="submit"></input>
-            <br></br>
-        </form>
+        <Head></Head>
+        <div id="content">
+            <form hx-post="/routines" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML">
+                <input hidden name="id" value={Uuid::new_v4().to_string()} type="text"></input>
+                <label>
+                    Name
+                    <input name="name" type="text"></input>
+                </label>
+                <label>
+                    Description
+                    <input name="description" type="text"></input>
+                </label>
+                <input type="submit"></input>
+                <br></br>
+            </form>
+        </div>
+    }
+}
+
+#[component]
+fn Head() -> impl IntoView {
+    view! {
+        <head hx-ext="head-support" hx-head="merge">
+            <script src="https://unpkg.com/htmx.org@1.9.6"
+            integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni"
+            crossorigin="anonymous"></script>
+            <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+            <script src="https://unpkg.com/htmx.org/dist/ext/head-support.js"></script>
+        </head>
     }
 }
 
 #[component]
 fn Routines(routines: HashMap<Uuid, Routine>) -> impl IntoView {
     view! {
-    <table>
-        <thead>
-            <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th></th>
-            <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <For
-                // a function that returns the items we're iterating over; a signal is fine
-                each=move || routines.clone()
-                // a unique key for each item
-                key=|(id, _)| id.clone()
-                // renders each item to a view
-                children=move |(id, routine): (Uuid, Routine)| {
-                    let id = id.to_string();
-                    view! {
-                        <tr>
-                        <td>{id.clone()}</td>
-                        <td>{routine.name}</td>
-                        <td>{routine.description}</td>
-                        <td>
-                            <button class="btn">
-                            View
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn" hx-delete={format!("/routines/{id}")} hx-target="closest tr" hx-swap="outerHTML">
-                            Delete
-                            </button>
-                        </td>
-                        </tr>
+    <Head></Head>
+    <div id="content">
+        <table>
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+                <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <For
+                    // a function that returns the items we're iterating over; a signal is fine
+                    each=move || routines.clone()
+                    // a unique key for each item
+                    key=|(id, _)| id.clone()
+                    // renders each item to a view
+                    children=move |(id, routine): (Uuid, Routine)| {
+                        let id = id.to_string();
+                        view! {
+                            <tr>
+                            <td>{id.clone()}</td>
+                            <td>{routine.name}</td>
+                            <td>{routine.description}</td>
+                            <td>
+                                <button class="btn">
+                                View
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn" hx-delete={format!("/routines/{id}")} hx-target="closest tr" hx-swap="outerHTML">
+                                Delete
+                                </button>
+                            </td>
+                            </tr>
+                        }
                     }
-                }
-            />
-            <tr>
-            <td>
-                <button class="btn" hx-post="/routines" hx-target="#content">
-                Add
-                </button>
-            </td>
-            </tr>
-        </tbody>
-    </table>
+                />
+                <tr>
+                <td>
+                    <button class="btn" hx-post="/routines" hx-target="#content">
+                    Add
+                    </button>
+                </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
     }
 }
 
