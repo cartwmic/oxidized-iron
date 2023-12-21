@@ -35,7 +35,7 @@ pub fn Routines(routines: HashMap<Uuid, Routine>) -> impl IntoView {
                             <td>{routine.name}</td>
                             <td>{routine.description}</td>
                             <td>
-                                <button class="btn">
+                                <button class="btn" hx-get={format!("/routines/{id}")} hx-target="#content" hx-swap="outerHTML" hx-push-url="true">
                                 View
                                 </button>
                             </td>

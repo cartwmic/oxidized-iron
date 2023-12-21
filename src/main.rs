@@ -27,6 +27,7 @@ async fn main() {
         .route("/routines", get(get_routines))
         .route("/routines", post(post_routines))
         .route("/routines/:routine_id", delete(delete_routine))
+        .route("/routines/:routine_id", get(get_routine))
         .with_state(my_state);
 
     // run it

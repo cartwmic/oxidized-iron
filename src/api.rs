@@ -11,8 +11,9 @@ use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 use crate::{
-    data::Routine,
+    data,
     external::MyState,
+    view,
     view::{create_routine::CreateRoutine, head::*, routines::Routines},
 };
 
@@ -26,7 +27,7 @@ pub async fn index() -> impl IntoResponse {
         <body>
             <h1>Oxidize RP</h1>
             <div id="content">
-                <button hx-get="/routines" hx-target="#content" hx-replace-url="true" hx-swap="outerHTML">View Routines</button>
+                <button hx-get="/routines" hx-target="#content" hx-push-url="true" hx-swap="outerHTML">View Routines</button>
             </div>
         </body>
 
@@ -49,9 +50,27 @@ pub async fn delete_routine(
     StatusCode::OK
 }
 
+pub async fn get_routine(
+    my_state: State<Arc<Mutex<MyState>>>,
+    Path(routine_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let inner = my_state.lock().unwrap();
+    let routine = inner.routines.get(&routine_id).unwrap().clone();
+
+    let html = leptos::ssr::render_to_string(|| {
+        view! {
+            <Head></Head>
+            <view::routine::Routine routine=routine></view::routine::Routine>
+        }
+    })
+    .to_string();
+
+    (StatusCode::OK, Html(html))
+}
+
 pub async fn post_routines(
     my_state: State<Arc<Mutex<MyState>>>,
-    maybe_routine: Option<Json<Routine>>,
+    maybe_routine: Option<Json<data::Routine>>,
 ) -> impl IntoResponse {
     maybe_routine.map_or(
         {
