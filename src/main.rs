@@ -32,12 +32,12 @@ async fn main() {
         .route("/routines/:routine_id", delete(delete_routine))
         .route("/workouts/:workout_id", delete(delete_workout))
         .route("/routines/:routine_id", get(get_routine))
+        .route("/routines/:routine_id/workouts", post(post_routine_workout))
         .with_state(my_state);
 
     // run it
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
         .unwrap();
-    println!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 }

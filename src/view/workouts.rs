@@ -6,6 +6,51 @@ use uuid::Uuid;
 use crate::{data::Workout, view::head::Head};
 
 #[component]
+pub fn WorkoutsForRoutine(workouts: HashMap<Uuid, Workout>, routine_id: Uuid) -> impl IntoView {
+    view! {
+    <Head></Head>
+    <div id="content">
+        <p>Workouts:</p>
+        <table>
+            <thead>
+                <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+                <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <For
+                    // a function that returns the items we're iterating over; a signal is fine
+                    each=move || workouts.clone()
+                    // a unique key for each item
+                    key=|(id, _)| id.clone()
+                    // renders each item to a view
+                    children=move |(id, workout): (Uuid, Workout)| {
+                        let id_str = id.to_string();
+                        view! {
+                            <tr>
+                            <td>{id_str.clone()}</td>
+                            <td>{workout.name}</td>
+                            <td>{workout.description}</td>
+                            <td>
+                                <button class="btn" hx-post={format!("/routines/{routine_id}/workouts?maybe_workout_id={id}")} hx-target="closest tr" hx-swap="outerHTML">
+                                Add Workout to routine
+                                </button>
+                            </td>
+                            </tr>
+                        }
+                    }
+                />
+            </tbody>
+        </table>
+    </div>
+    }
+}
+
+#[component]
 pub fn Workouts(workouts: HashMap<Uuid, Workout>, routine_id: Option<Uuid>) -> impl IntoView {
     view! {
     <Head></Head>
@@ -64,7 +109,7 @@ struct AddButtonVariationData {
 }
 
 #[component]
-pub fn AddWorkoutFromWorkoutsButton(routine_id: Option<Uuid>) -> impl IntoView {
+fn AddWorkoutFromWorkoutsButton(routine_id: Option<Uuid>) -> impl IntoView {
     let mut addButtonVariationData = AddButtonVariationData {
         button_text: "Add Workout".to_owned(),
         add_api_endpoint: format!("/workouts"),
@@ -73,7 +118,7 @@ pub fn AddWorkoutFromWorkoutsButton(routine_id: Option<Uuid>) -> impl IntoView {
     if let Some(routine_id) = routine_id {
         addButtonVariationData = AddButtonVariationData {
             button_text: "Add Workout to Routine".to_owned(),
-            add_api_endpoint: format!("routines/{routine_id}/workouts"),
+            add_api_endpoint: format!("/routines/{routine_id}/workouts"),
         };
     };
 
@@ -90,10 +135,7 @@ struct DeleteButtonVariationData {
 }
 
 #[component]
-pub fn DeleteWorkoutFromWorkoutsButton(
-    workout_id: Uuid,
-    routine_id: Option<Uuid>,
-) -> impl IntoView {
+fn DeleteWorkoutFromWorkoutsButton(workout_id: Uuid, routine_id: Option<Uuid>) -> impl IntoView {
     let mut deleteButtonVariationData = DeleteButtonVariationData {
         button_text: "Delete Workout".to_owned(),
         delete_api_endpoint: format!("/workouts/{workout_id}"),
@@ -102,7 +144,7 @@ pub fn DeleteWorkoutFromWorkoutsButton(
     if let Some(routine_id) = routine_id {
         deleteButtonVariationData = DeleteButtonVariationData {
             button_text: "Delete Workout from Routine".to_owned(),
-            delete_api_endpoint: format!("routines/{routine_id}/workouts/{workout_id}"),
+            delete_api_endpoint: format!("/routines/{routine_id}/workouts/{workout_id}"),
         };
     };
 

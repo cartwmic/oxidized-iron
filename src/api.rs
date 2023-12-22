@@ -1,19 +1,27 @@
 use axum::{
     extract::State,
-    extract::{Json, Path},
+    extract::{Json, Path, Query},
     http::StatusCode,
     response::{Html, IntoResponse},
 };
 use leptos::*;
+use serde::Deserialize;
 
-use std::sync::{Arc, Mutex};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use uuid::Uuid;
 
 use crate::{
     data,
     external::MyState,
-    view::{self, create_workout::CreateWorkout, workouts::Workouts},
+    view::{
+        self,
+        create_workout::CreateWorkout,
+        workouts::{Workouts, WorkoutsForRoutine},
+    },
     view::{create_routine::CreateRoutine, head::*, routines::Routines},
 };
 
@@ -78,6 +86,50 @@ pub async fn get_routine(
     .to_string();
 
     (StatusCode::OK, Html(html))
+}
+
+#[derive(Debug, Deserialize)]
+pub struct WorkoutUuid {
+    maybe_workout_id: Option<Uuid>
+}
+
+pub async fn post_routine_workout(
+    my_state: State<Arc<Mutex<MyState>>>,
+    Path(routine_id): Path<Uuid>,
+    workout_uuid: Query<WorkoutUuid>,
+) -> impl IntoResponse {
+    let mut inner = my_state.lock().unwrap();
+    let workouts = inner.workouts.clone();
+    let workouts_2 = inner.workouts.clone();
+
+    workout_uuid.maybe_workout_id.map_or(
+        {
+            let html = leptos::ssr::render_to_string(move || {
+                view! {
+                    <Head></Head>
+                    <WorkoutsForRoutine workouts=workouts routine_id=routine_id></WorkoutsForRoutine>
+                }
+            })
+            .to_string();
+
+            (StatusCode::OK, Html(html)).into_response()
+        },
+        |workout_id| {
+            inner
+                .routines
+                .get_mut(&routine_id)
+                .unwrap()
+                .workouts
+                .get_or_insert(HashMap::new())
+                .insert(
+                    workout_id.clone(), 
+                    workouts_2.get(&workout_id).unwrap().clone()
+                );
+
+
+            StatusCode::OK.into_response()
+        },
+    )
 }
 
 pub async fn post_workout(
