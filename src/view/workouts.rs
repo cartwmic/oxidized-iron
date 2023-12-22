@@ -49,14 +49,38 @@ pub fn Workouts(workouts: HashMap<Uuid, Workout>, routine_id: Option<Uuid>) -> i
                 />
                 <tr>
                 <td>
-                    <button class="btn" hx-post="/workouts" hx-target="#content">
-                    Add
-                    </button>
+                    <AddWorkoutFromWorkoutsButton routine_id=routine_id></AddWorkoutFromWorkoutsButton>
                 </td>
                 </tr>
             </tbody>
         </table>
     </div>
+    }
+}
+
+struct AddButtonVariationData {
+    button_text: String,
+    add_api_endpoint: String,
+}
+
+#[component]
+pub fn AddWorkoutFromWorkoutsButton(routine_id: Option<Uuid>) -> impl IntoView {
+    let mut addButtonVariationData = AddButtonVariationData {
+        button_text: "Add Workout".to_owned(),
+        add_api_endpoint: format!("/workouts"),
+    };
+
+    if let Some(routine_id) = routine_id {
+        addButtonVariationData = AddButtonVariationData {
+            button_text: "Add Workout to Routine".to_owned(),
+            add_api_endpoint: format!("routines/{routine_id}/workouts"),
+        };
+    };
+
+    view! {
+        <button class="btn" hx-post={addButtonVariationData.add_api_endpoint} hx-target="#content">
+            { addButtonVariationData.button_text }
+        </button>
     }
 }
 

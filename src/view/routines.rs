@@ -23,11 +23,8 @@ pub fn Routines(routines: HashMap<Uuid, Routine>) -> impl IntoView {
             </thead>
             <tbody>
                 <For
-                    // a function that returns the items we're iterating over; a signal is fine
                     each=move || routines.clone()
-                    // a unique key for each item
                     key=|(id, _)| id.clone()
-                    // renders each item to a view
                     children=move |(id, routine): (Uuid, Routine)| {
                         let id = id.to_string();
                         view! {
