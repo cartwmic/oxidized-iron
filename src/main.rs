@@ -30,6 +30,7 @@ async fn main() {
         .route("/routines", post(post_routine))
         .route("/workouts", post(post_workout))
         .route("/routines/:routine_id", delete(delete_routine))
+        .route("/workouts/:workout_id", delete(delete_workout))
         .route("/routines/:routine_id", get(get_routine))
         .with_state(my_state);
 

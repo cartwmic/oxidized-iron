@@ -15,7 +15,7 @@ pub fn Routine(routine: Routine) -> impl IntoView {
         <h2>Routine: { routine.name }</h2>
         <p>id: { routine.id.to_string() }</p>
         <p>description: { routine.description }</p>
-        <Workouts workouts=routine.workouts.unwrap_or_else(|| HashMap::new()) workouts_from_routine=true></Workouts>
+        <Workouts workouts=routine.workouts.unwrap_or_else(|| HashMap::new()) routine_id=Some(routine.id)></Workouts>
     </div>
     }
 }

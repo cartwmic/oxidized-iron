@@ -51,6 +51,17 @@ pub async fn delete_routine(
     StatusCode::OK
 }
 
+pub async fn delete_workout(
+    my_state: State<Arc<Mutex<MyState>>>,
+    Path(workout_id): Path<Uuid>,
+) -> impl IntoResponse {
+    let mut inner = my_state.lock().unwrap();
+
+    inner.workouts.remove(&workout_id);
+
+    StatusCode::OK
+}
+
 pub async fn get_routine(
     my_state: State<Arc<Mutex<MyState>>>,
     Path(routine_id): Path<Uuid>,
@@ -94,7 +105,7 @@ pub async fn post_workout(
             let html = leptos::ssr::render_to_string(|| {
                 view! {
                     <Head></Head>
-                    <Workouts workouts=workouts workouts_from_routine=false></Workouts>
+                    <Workouts workouts=workouts routine_id=None></Workouts>
                 }
             })
             .to_string();
@@ -163,7 +174,7 @@ pub async fn get_workouts(State(my_state): State<Arc<Mutex<MyState>>>) -> impl I
     let html = leptos::ssr::render_to_string(|| {
         view! {
             <Head></Head>
-            <Workouts workouts=workouts workouts_from_routine=false></Workouts>
+            <Workouts workouts=workouts routine_id=None></Workouts>
         }
     })
     .to_string();

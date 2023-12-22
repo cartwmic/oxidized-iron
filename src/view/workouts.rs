@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::{data::Workout, view::head::Head};
 
 #[component]
-pub fn Workouts(workouts: HashMap<Uuid, Workout>, workouts_from_routine: bool) -> impl IntoView {
+pub fn Workouts(workouts: HashMap<Uuid, Workout>, routine_id: Option<Uuid>) -> impl IntoView {
     view! {
     <Head></Head>
     <div id="content">
@@ -41,7 +41,7 @@ pub fn Workouts(workouts: HashMap<Uuid, Workout>, workouts_from_routine: bool) -
                                 </button>
                             </td>
                             <td>
-                                <DeleteWorkoutFromWorkoutsButton id=id workouts_from_routine=workouts_from_routine></DeleteWorkoutFromWorkoutsButton>
+                                <DeleteWorkoutFromWorkoutsButton workout_id=id routine_id=routine_id></DeleteWorkoutFromWorkoutsButton>
                             </td>
                             </tr>
                         }
@@ -60,17 +60,31 @@ pub fn Workouts(workouts: HashMap<Uuid, Workout>, workouts_from_routine: bool) -
     }
 }
 
+struct DeleteButtonVariationData {
+    button_text: String,
+    delete_api_endpoint: String,
+}
+
 #[component]
-pub fn DeleteWorkoutFromWorkoutsButton(id: Uuid, workouts_from_routine: bool) -> impl IntoView {
-    let button_text = if workouts_from_routine {
-        "Delete From Routine"
-    } else {
-        "Delete Workout"
+pub fn DeleteWorkoutFromWorkoutsButton(
+    workout_id: Uuid,
+    routine_id: Option<Uuid>,
+) -> impl IntoView {
+    let mut deleteButtonVariationData = DeleteButtonVariationData {
+        button_text: "Delete Workout".to_owned(),
+        delete_api_endpoint: format!("/workouts/{workout_id}"),
+    };
+
+    if let Some(routine_id) = routine_id {
+        deleteButtonVariationData = DeleteButtonVariationData {
+            button_text: "Delete Workout from Routine".to_owned(),
+            delete_api_endpoint: format!("routines/{routine_id}/workouts/{workout_id}"),
+        };
     };
 
     view! {
-        <button class="btn" hx-delete={format!("/workouts/{id}")} hx-target="closest tr" hx-swap="outerHTML">
-            { button_text }
+        <button class="btn" hx-delete={deleteButtonVariationData.delete_api_endpoint} hx-target="closest tr" hx-swap="outerHTML">
+            { deleteButtonVariationData.button_text }
         </button>
     }
 }
