@@ -10,6 +10,7 @@ pub fn Routines(routines: HashMap<Uuid, Routine>) -> impl IntoView {
     view! {
     <Head></Head>
     <div id="content">
+        <p>Routines:</p>
         <table>
             <thead>
                 <tr>
