@@ -9,7 +9,7 @@ use std::{
 };
 
 use crate::external::MyState;
-use api::*;
+use api::{routines::*, workouts::*, *};
 
 pub mod api;
 pub mod data;
@@ -25,13 +25,13 @@ async fn main() {
     // build our application with a route
     let app = Router::new()
         .route("/", get(index))
-        .route("/routines", get(get_routines))
+        .route("/routines", get(view_all_routines))
         .route("/workouts", get(get_workouts))
-        .route("/routines", post(post_routine))
-        .route("/workouts", post(post_workout))
+        .route("/routines", post(create_routine))
+        .route("/workouts", post(create_workout))
         .route("/routines/:routine_id", delete(delete_routine))
         .route("/workouts/:workout_id", delete(delete_workout))
-        .route("/routines/:routine_id", get(get_routine))
+        .route("/routines/:routine_id", get(view_routine))
         .route("/routines/:routine_id/workouts", post(post_routine_workout))
         .with_state(my_state);
 
