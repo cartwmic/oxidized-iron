@@ -36,7 +36,7 @@ pub async fn get_component_for_adding_workout_to_globabl_workouts() -> impl Into
     let html = leptos::ssr::render_to_string(|| {
         view! {
             <Head></Head>
-            <CreateWorkout></CreateWorkout>
+            <CreateWorkoutForm></CreateWorkoutForm>
         }
     })
     .to_string();

@@ -191,7 +191,7 @@ fn DeleteWorkoutFromGlobalWorkoutsListButton(workout_id: Uuid) -> impl IntoView 
 }
 
 #[component]
-pub fn CreateWorkout() -> impl IntoView {
+pub fn CreateWorkoutForm() -> impl IntoView {
     view! {
         <div id="content">
             <form hx-post="/workouts" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML">
