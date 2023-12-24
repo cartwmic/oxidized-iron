@@ -5,50 +5,6 @@ use uuid::Uuid;
 
 use crate::data::Workout;
 
-// #[component]
-// pub fn ViewWorkoutsListToAddToRoutine(
-//     workouts: HashMap<Uuid, Workout>,
-//     routine_id: Uuid,
-// ) -> impl IntoView {
-//     view! {
-//         <div id="#content">
-//             <p>Workouts:</p>
-//             <table>
-//                 <thead>
-//                     <tr>
-//                     <th>ID</th>
-//                     <th>Name</th>
-//                     <th>Description</th>
-//                     <th></th>
-//                     <th></th>
-//                     </tr>
-//                 </thead>
-//                 <tbody>
-//                     <For
-//                         each=move || workouts.clone()
-//                         key=|(id, _)| id.clone()
-//                         children=move |(id, workout): (Uuid, Workout)| {
-//                             let id_str = id.to_string();
-//                             view! {
-//                                 <tr>
-//                                 <td>{id_str.clone()}</td>
-//                                 <td>{workout.name}</td>
-//                                 <td>{workout.description}</td>
-//                                 <td>
-//                                     <button class="btn" hx-post={format!("/routines/{routine_id}/workouts/{id}")} hx-target="closest tr" hx-swap="outerHTML">
-//                                     Add Workout to routine
-//                                     </button>
-//                                 </td>
-//                                 </tr>
-//                             }
-//                         }
-//                     />
-//                 </tbody>
-//             </table>
-//         </div>
-//     }
-// }
-
 #[component]
 pub fn ViewGlobalWorkoutsListToAddToRoutine(
     workouts: HashMap<Uuid, Workout>,
