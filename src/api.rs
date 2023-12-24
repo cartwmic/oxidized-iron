@@ -17,13 +17,7 @@ use std::{
 
 use uuid::Uuid;
 
-use crate::{
-    external::MyState,
-    view::workouts::*,
-    view::head::*,
-};
-
-use self::query_structs::WorkoutUuid;
+use crate::{external::MyState, view::head::*, view::workouts::*};
 
 pub async fn index() -> impl IntoResponse {
     let html = leptos::ssr::render_to_string(|| {
@@ -48,42 +42,42 @@ pub async fn index() -> impl IntoResponse {
     (StatusCode::OK, Html(html))
 }
 
-pub async fn post_routine_workout(
+pub async fn get_component_for_adding_routine_to_workout(
     my_state: State<Arc<Mutex<MyState>>>,
     Path(routine_id): Path<Uuid>,
-    workout_uuid: Query<WorkoutUuid>,
+) -> impl IntoResponse {
+    let inner = my_state.lock().unwrap();
+    let workouts = inner.workouts.clone();
+
+    let html = leptos::ssr::render_to_string(move || {
+        view! {
+            <Head></Head>
+            <ViewGlobalWorkoutsListToAddToRoutine workouts=workouts routine_id=routine_id></ViewGlobalWorkoutsListToAddToRoutine>
+        }
+    })
+    .to_string();
+
+    (StatusCode::OK, Html(html)).into_response()
+}
+
+pub async fn add_routine_to_workout(
+    my_state: State<Arc<Mutex<MyState>>>,
+    Path(routine_id): Path<Uuid>,
+    Path(workout_id): Path<Uuid>,
 ) -> impl IntoResponse {
     let mut inner = my_state.lock().unwrap();
     let workouts = inner.workouts.clone();
-    let workouts_2 = inner.workouts.clone();
 
-    workout_uuid.maybe_workout_id.map_or(
-        {
-            let html = leptos::ssr::render_to_string(move || {
-                view! {
-                    <Head></Head>
-                    <ViewWorkoutsListToAddToRoutine workouts=workouts routine_id=routine_id></ViewWorkoutsListToAddToRoutine>
-                }
-            })
-            .to_string();
+    inner
+        .routines
+        .get_mut(&routine_id)
+        .unwrap()
+        .workouts
+        .get_or_insert(HashMap::new())
+        .insert(
+            workout_id.clone(),
+            workouts.get(&workout_id).unwrap().clone(),
+        );
 
-            (StatusCode::OK, Html(html)).into_response()
-        },
-        |workout_id| {
-            inner
-                .routines
-                .get_mut(&routine_id)
-                .unwrap()
-                .workouts
-                .get_or_insert(HashMap::new())
-                .insert(
-                    workout_id.clone(), 
-                    workouts_2.get(&workout_id).unwrap().clone()
-                );
-
-
-            StatusCode::OK.into_response()
-        },
-    )
+    StatusCode::OK.into_response()
 }
-

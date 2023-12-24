@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use leptos::*;
 use uuid::Uuid;
 
-use crate::{data::Routine, view::workouts::ViewWorkoutsList};
+use crate::{data::Routine, view::workouts::ViewWorkoutsListForRoutine};
 
 #[component]
 pub fn ViewRoutinesList(routines: HashMap<Uuid, Routine>) -> impl IntoView {
@@ -72,7 +72,7 @@ pub fn ViewRoutine(routine: Routine) -> impl IntoView {
             <h2>Routine: { routine.name }</h2>
             <p>id: { routine.id.to_string() }</p>
             <p>description: { routine.description }</p>
-            <ViewWorkoutsList workouts=routine.workouts.unwrap_or_else(|| HashMap::new()) maybe_routine_id=Some(routine.id)></ViewWorkoutsList>
+            <ViewWorkoutsListForRoutine workouts=routine.workouts.unwrap_or_else(|| HashMap::new()) routine_id=routine.id></ViewWorkoutsListForRoutine>
         </div>
     }
 }
