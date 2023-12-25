@@ -19,7 +19,11 @@ use std::{
 
 use uuid::Uuid;
 
-use crate::{external::MyState, view::head::*, view::workouts::*};
+use crate::{
+    external::MyState,
+    view::workouts::*,
+    view::{head::*, index::Index},
+};
 
 pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
     Router::new()
@@ -37,18 +41,7 @@ pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
 pub async fn index() -> impl IntoResponse {
     let html = leptos::ssr::render_to_string(|| {
         view! {
-        <html lang="en">
-
-        <Head></Head>
-
-        <body>
-            <div id="content">
-                <button hx-get="/routines" hx-target="#content" hx-push-url="true" hx-swap="outerHTML">View Routines</button>
-                <button hx-get="/workouts" hx-target="#content" hx-push-url="true" hx-swap="outerHTML">View Workouts</button>
-            </div>
-        </body>
-
-        </html>
+            <Index></Index>
         }
     })
     .to_string();
