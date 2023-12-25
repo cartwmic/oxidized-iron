@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{data, external::MyState, view::head::*, view::workouts::*};
 
-pub async fn add_workout_to_globabl_workouts(
+pub async fn add_workout_to_globabl_workouts_and_view_globabl_workouts_list_component(
     my_state: State<Arc<Mutex<MyState>>>,
     Json(workout): Json<data::Workout>,
 ) -> impl IntoResponse {

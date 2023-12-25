@@ -78,7 +78,7 @@ pub fn ViewRoutine(routine: Routine) -> impl IntoView {
 }
 
 #[component]
-pub fn CreateRoutine() -> impl IntoView {
+pub fn CreateRoutineForm() -> impl IntoView {
     view! {
         <div id="content">
             <form hx-post="/routines" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML">
