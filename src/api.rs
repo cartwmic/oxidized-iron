@@ -77,8 +77,7 @@ pub async fn get_component_for_adding_routine_to_workout(
 
 pub async fn add_routine_to_workout(
     my_state: State<Arc<Mutex<MyState>>>,
-    Path(routine_id): Path<Uuid>,
-    Path(workout_id): Path<Uuid>,
+    Path((routine_id, workout_id)): Path<(Uuid, Uuid)>,
 ) -> impl IntoResponse {
     let mut inner = my_state.lock().unwrap();
     let workouts = inner.workouts.clone();

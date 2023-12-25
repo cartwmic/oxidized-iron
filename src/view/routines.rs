@@ -32,7 +32,7 @@ pub fn ViewRoutinesList(routines: HashMap<Uuid, Routine>) -> impl IntoView {
                     />
                     <tr>
                     <td>
-                        <button class="btn" hx-post="/routines" hx-target="#content">
+                        <button class="btn" hx-get="/routines/add-routine-form" hx-target="#content">
                         Add
                         </button>
                     </td>

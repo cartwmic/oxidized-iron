@@ -28,6 +28,10 @@ pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
             "/routines",
             post(create_routine_and_get_view_all_routines_component),
         )
+        .route(
+            "/routines/add-routine-form",
+            get(get_create_routine_component),
+        )
         .route("/routines/:routine_id", delete(delete_routine))
         .route("/routines/:routine_id", get(get_view_routine_component))
 }

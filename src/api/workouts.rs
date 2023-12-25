@@ -22,6 +22,10 @@ pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
             post(add_workout_to_globabl_workouts_and_view_globabl_workouts_list_component),
         )
         .route(
+            "/workouts/add-workout-form",
+            get(get_component_for_adding_workout_to_globabl_workouts),
+        )
+        .route(
             "/workouts/:workout_id",
             delete(delete_workout_from_global_workouts),
         )
