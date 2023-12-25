@@ -7,6 +7,8 @@ use axum::{
     extract::State,
     http::StatusCode,
     response::{Html, IntoResponse},
+    routing::{get, post},
+    Router,
 };
 use leptos::*;
 
@@ -18,6 +20,19 @@ use std::{
 use uuid::Uuid;
 
 use crate::{external::MyState, view::head::*, view::workouts::*};
+
+pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
+    Router::new()
+        .route("/", get(index))
+        .route(
+            "/routines/:routine_id/workouts/add-workout-form",
+            get(get_component_for_adding_routine_to_workout),
+        )
+        .route(
+            "/routines/:routine_id/workouts/:workout_id",
+            post(add_routine_to_workout),
+        )
+}
 
 pub async fn index() -> impl IntoResponse {
     let html = leptos::ssr::render_to_string(|| {

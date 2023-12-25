@@ -3,6 +3,8 @@ use axum::{
     extract::{Json, Path},
     http::StatusCode,
     response::{Html, IntoResponse},
+    routing::{delete, get, post},
+    Router,
 };
 use leptos::*;
 
@@ -18,6 +20,17 @@ use crate::{
         routines::{CreateRoutineForm, ViewRoutine, ViewRoutinesList},
     },
 };
+
+pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
+    Router::new()
+        .route("/routines", get(get_view_all_routines_component))
+        .route(
+            "/routines",
+            post(create_routine_and_get_view_all_routines_component),
+        )
+        .route("/routines/:routine_id", delete(delete_routine))
+        .route("/routines/:routine_id", get(get_view_routine_component))
+}
 
 pub async fn get_view_routine_component(
     my_state: State<Arc<Mutex<MyState>>>,

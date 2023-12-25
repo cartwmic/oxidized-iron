@@ -1,7 +1,4 @@
-use axum::{
-    routing::{delete, get, post},
-    Router,
-};
+use axum::Router;
 
 use std::{
     collections::HashMap,
@@ -9,7 +6,6 @@ use std::{
 };
 
 use crate::external::MyState;
-use api::{routines::*, workouts::*, *};
 
 pub mod api;
 pub mod data;
@@ -24,35 +20,14 @@ async fn main() {
     let my_state = Arc::new(Mutex::new(MyState { routines, workouts }));
 
     let app = Router::new()
-        .route("/", get(index))
-        .route("/routines", get(get_view_all_routines_component))
-        .route("/workouts", get(get_global_workouts_list_component))
-        .route(
-            "/routines",
-            post(create_routine_and_get_view_all_routines_component),
-        )
-        .route(
-            "/workouts",
-            post(add_workout_to_globabl_workouts_and_view_globabl_workouts_list_component),
-        )
-        .route("/routines/:routine_id", delete(delete_routine))
-        .route(
-            "/workouts/:workout_id",
-            delete(delete_workout_from_global_workouts),
-        )
-        .route("/routines/:routine_id", get(get_view_routine_component))
-        .route(
-            "/routines/:routine_id/workouts/add-workout-form",
-            get(get_component_for_adding_routine_to_workout),
-        )
-        .route(
-            "/routines/:routine_id/workouts/:workout_id",
-            post(add_routine_to_workout),
-        )
+        .merge(api::get_router())
+        .merge(api::workouts::get_router())
+        .merge(api::routines::get_router())
         .with_state(my_state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
         .unwrap();
+
     axum::serve(listener, app).await.unwrap();
 }

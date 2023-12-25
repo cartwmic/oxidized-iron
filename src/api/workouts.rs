@@ -3,6 +3,8 @@ use axum::{
     extract::{Json, Path},
     http::StatusCode,
     response::{Html, IntoResponse},
+    routing::{delete, get, post},
+    Router,
 };
 use leptos::*;
 
@@ -11,6 +13,19 @@ use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 use crate::{data, external::MyState, view::head::*, view::workouts::*};
+
+pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
+    Router::new()
+        .route("/workouts", get(get_global_workouts_list_component))
+        .route(
+            "/workouts",
+            post(add_workout_to_globabl_workouts_and_view_globabl_workouts_list_component),
+        )
+        .route(
+            "/workouts/:workout_id",
+            delete(delete_workout_from_global_workouts),
+        )
+}
 
 pub async fn add_workout_to_globabl_workouts_and_view_globabl_workouts_list_component(
     my_state: State<Arc<Mutex<MyState>>>,
