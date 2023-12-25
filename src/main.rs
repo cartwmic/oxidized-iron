@@ -23,7 +23,6 @@ async fn main() {
     let workouts = HashMap::new();
     let my_state = Arc::new(Mutex::new(MyState { routines, workouts }));
 
-    // build our application with a route
     let app = Router::new()
         .route("/", get(index))
         .route("/routines", get(get_view_all_routines_component))
