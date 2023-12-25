@@ -42,7 +42,6 @@ pub async fn index() -> impl IntoResponse {
         <Head></Head>
 
         <body>
-            <h1>Oxidize RP</h1>
             <div id="content">
                 <button hx-get="/routines" hx-target="#content" hx-push-url="true" hx-swap="outerHTML">View Routines</button>
                 <button hx-get="/workouts" hx-target="#content" hx-push-url="true" hx-swap="outerHTML">View Workouts</button>
