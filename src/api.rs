@@ -3,8 +3,8 @@ pub mod routines;
 pub mod workouts;
 
 use axum::{
+    extract::Path,
     extract::State,
-    extract::{Path, Query},
     http::StatusCode,
     response::{Html, IntoResponse},
 };
