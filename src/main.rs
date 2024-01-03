@@ -23,6 +23,7 @@ async fn main() {
         .merge(api::get_router())
         .merge(api::workouts::get_router())
         .merge(api::routines::get_router())
+        .merge(api::routine_workouts::get_router())
         .with_state(my_state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
