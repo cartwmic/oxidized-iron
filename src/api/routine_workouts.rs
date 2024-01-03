@@ -3,7 +3,7 @@ use axum::{
     extract::State,
     http::StatusCode,
     response::{Html, IntoResponse},
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use leptos::*;
@@ -23,7 +23,11 @@ pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
         )
         .route(
             "/routines/:routine_id/workouts/:workout_id",
-            post(add_routine_to_workout),
+            post(add_workout_to_routine),
+        )
+        .route(
+            "/routines/:routine_id/workouts/:workout_id",
+            delete(delete_workout_from_routine),
         )
 }
 
@@ -47,7 +51,7 @@ pub async fn get_component_for_adding_routine_to_workout(
     (StatusCode::OK, Html(html)).into_response()
 }
 
-pub async fn add_routine_to_workout(
+pub async fn add_workout_to_routine(
     my_state: State<Arc<Mutex<MyState>>>,
     Path((routine_id, workout_id)): Path<(Uuid, Uuid)>,
 ) -> impl IntoResponse {
@@ -64,6 +68,23 @@ pub async fn add_routine_to_workout(
             workout_id.clone(),
             workouts.get(&workout_id).unwrap().clone(),
         );
+
+    StatusCode::OK.into_response()
+}
+
+pub async fn delete_workout_from_routine(
+    my_state: State<Arc<Mutex<MyState>>>,
+    Path((routine_id, workout_id)): Path<(Uuid, Uuid)>,
+) -> impl IntoResponse {
+    let mut inner = my_state.lock().unwrap();
+
+    inner
+        .routines
+        .get_mut(&routine_id)
+        .unwrap()
+        .workouts
+        .get_or_insert(HashMap::new())
+        .remove(&workout_id);
 
     StatusCode::OK.into_response()
 }
