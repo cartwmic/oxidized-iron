@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use leptos::*;
 use uuid::Uuid;
 
-use crate::{data::Routine, view::workouts::ViewWorkoutsListForRoutine};
+use crate::{data::Routine, view::routine_workouts::ViewWorkoutsListForRoutine};
 
 #[component]
 pub fn ViewRoutinesList(routines: HashMap<Uuid, Routine>) -> impl IntoView {

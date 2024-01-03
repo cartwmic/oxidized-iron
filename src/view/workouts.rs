@@ -83,40 +83,6 @@ pub fn ViewGlobalWorkoutsList(workouts: HashMap<Uuid, Workout>) -> impl IntoView
 }
 
 #[component]
-pub fn ViewWorkoutsListForRoutine(
-    workouts: HashMap<Uuid, Workout>,
-    routine_id: Uuid,
-) -> impl IntoView {
-    let workout_row_delete_button = move |workout_id: Uuid| {
-        view! {
-            <td>
-                <DeleteWorkoutFromRoutineWorkoutsListButton workout_id=workout_id routine_id=routine_id></DeleteWorkoutFromRoutineWorkoutsListButton>
-            </td>
-        }.into_view()
-    };
-    let get_workout_row_component = move |workout: Workout| {
-        view! {
-            <ViewWorkoutsListRow workout=workout maybe_workout_row_add_button=None maybe_workout_row_delete_button=Some(Box::new(workout_row_delete_button))></ViewWorkoutsListRow>
-        }
-    };
-    let get_workouts_add_button_component = move || {
-        view! {
-            <ButtonToNavigateToAddWorkoutFormForRoutineWorkouts routine_id=routine_id></ButtonToNavigateToAddWorkoutFormForRoutineWorkouts>
-        }
-    };
-    let get_workouts_back_button_component = move || view! {}.into_view();
-    view! {
-        <ViewWorkoutsList
-            workouts=workouts
-            get_workout_row_component=Box::new(get_workout_row_component)
-            get_workouts_add_button_component=Box::new(get_workouts_add_button_component)
-            div_id="content".to_owned()
-            get_workouts_back_button_component=Box::new(get_workouts_back_button_component)>
-        </ViewWorkoutsList>
-    }
-}
-
-#[component]
 pub fn ViewWorkoutsList(
     workouts: HashMap<Uuid, Workout>,
     get_workout_row_component: Box<dyn Fn(Workout) -> View>,
@@ -185,7 +151,7 @@ pub fn ViewWorkoutsListRow(
 }
 
 #[component]
-fn ButtonToNavigateToAddWorkoutFormForRoutineWorkouts(routine_id: Uuid) -> impl IntoView {
+pub fn ButtonToNavigateToAddWorkoutFormForRoutineWorkouts(routine_id: Uuid) -> impl IntoView {
     view! {
         <button class="btn" hx-get={format!("/routines/{routine_id}/workouts/add-workout-form")} hx-push-url="true" hx-target="#content">
             View Workouts to Add To Routine
@@ -194,7 +160,7 @@ fn ButtonToNavigateToAddWorkoutFormForRoutineWorkouts(routine_id: Uuid) -> impl 
 }
 
 #[component]
-fn ButtonToNavigateToAddWorkoutFormForGlobablWorkouts() -> impl IntoView {
+pub fn ButtonToNavigateToAddWorkoutFormForGlobablWorkouts() -> impl IntoView {
     view! {
         <button class="btn" hx-get="/workouts/add-workout-form" hx-push-url="true" hx-target="#content">
             Add Workout
@@ -203,7 +169,7 @@ fn ButtonToNavigateToAddWorkoutFormForGlobablWorkouts() -> impl IntoView {
 }
 
 #[component]
-fn AddWorkoutToRoutineWorkoutsListButton(routine_id: Uuid, workout_id: Uuid) -> impl IntoView {
+pub fn AddWorkoutToRoutineWorkoutsListButton(routine_id: Uuid, workout_id: Uuid) -> impl IntoView {
     view! {
         <button class="btn" hx-post={format!("/routines/{routine_id}/workouts/{workout_id}", routine_id = routine_id.to_string(), workout_id = workout_id.to_string())} hx-target="closest tr" hx-swap="outerHTML">
         Add Workout to routine
@@ -212,7 +178,10 @@ fn AddWorkoutToRoutineWorkoutsListButton(routine_id: Uuid, workout_id: Uuid) -> 
 }
 
 #[component]
-fn DeleteWorkoutFromRoutineWorkoutsListButton(workout_id: Uuid, routine_id: Uuid) -> impl IntoView {
+pub fn DeleteWorkoutFromRoutineWorkoutsListButton(
+    workout_id: Uuid,
+    routine_id: Uuid,
+) -> impl IntoView {
     view! {
         <button class="btn" hx-delete={format!("/routines/{routine_id}/workouts/{workout_id}")} hx-target="closest tr" hx-swap="outerHTML">
             Delete Workout from Routine
@@ -221,7 +190,7 @@ fn DeleteWorkoutFromRoutineWorkoutsListButton(workout_id: Uuid, routine_id: Uuid
 }
 
 #[component]
-fn DeleteWorkoutFromGlobalWorkoutsListButton(workout_id: Uuid) -> impl IntoView {
+pub fn DeleteWorkoutFromGlobalWorkoutsListButton(workout_id: Uuid) -> impl IntoView {
     view! {
         <button class="btn" hx-delete={format!("/workouts/{workout_id}")} hx-target="closest tr" hx-swap="outerHTML">
             Delete Workout
@@ -230,7 +199,7 @@ fn DeleteWorkoutFromGlobalWorkoutsListButton(workout_id: Uuid) -> impl IntoView 
 }
 
 #[component]
-fn ButtonToNavigateBackFromViewingWorkouts(resource_path: String) -> impl IntoView {
+pub fn ButtonToNavigateBackFromViewingWorkouts(resource_path: String) -> impl IntoView {
     view! {
         <button class="btn" hx-get={resource_path} hx-target="#content" hx-push-url="true" hx-swap="outerHTML">
             Back
