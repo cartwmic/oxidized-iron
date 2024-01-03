@@ -13,7 +13,7 @@ pub fn ViewGlobalWorkoutsListToAddToRoutine(
     let workout_row_add_button = move |workout_id: Uuid| {
         view! {
             <td>
-                <AddworkoutToRoutineWorkoutsListButton workout_id=workout_id routine_id=routine_id></AddworkoutToRoutineWorkoutsListButton>
+                <AddWorkoutToRoutineWorkoutsListButton workout_id=workout_id routine_id=routine_id></AddWorkoutToRoutineWorkoutsListButton>
             </td>
         }.into_view()
     };
@@ -27,8 +27,21 @@ pub fn ViewGlobalWorkoutsListToAddToRoutine(
             <ButtonToNavigateToAddWorkoutFormForGlobablWorkouts></ButtonToNavigateToAddWorkoutFormForGlobablWorkouts>
         }
     };
+    let get_workouts_back_button_component = move || {
+        view! {
+            <td>
+                <ButtonToNavigateBackFromViewingWorkouts resource_path=format!("/routines/{routine_id}")></ButtonToNavigateBackFromViewingWorkouts>
+            </td>
+        }.into_view()
+    };
     view! {
-        <ViewWorkoutsList workouts=workouts get_workout_row_component=Box::new(get_workout_row_component) get_workouts_add_button_component=Box::new(get_workouts_add_button_component) div_id="content".to_owned()></ViewWorkoutsList>
+        <ViewWorkoutsList
+            workouts=workouts
+            get_workout_row_component=Box::new(get_workout_row_component)
+            get_workouts_add_button_component=Box::new(get_workouts_add_button_component)
+            div_id="content".to_owned()
+            get_workouts_back_button_component=Box::new(get_workouts_back_button_component)>
+        </ViewWorkoutsList>
     }
 }
 
@@ -51,8 +64,21 @@ pub fn ViewGlobalWorkoutsList(workouts: HashMap<Uuid, Workout>) -> impl IntoView
             <ButtonToNavigateToAddWorkoutFormForGlobablWorkouts></ButtonToNavigateToAddWorkoutFormForGlobablWorkouts>
         }
     };
+    let get_workouts_back_button_component = move || {
+        view! {
+            <td>
+                <ButtonToNavigateBackFromViewingWorkouts resource_path="/".to_owned()></ButtonToNavigateBackFromViewingWorkouts>
+            </td>
+        }.into_view()
+    };
     view! {
-        <ViewWorkoutsList workouts=workouts get_workout_row_component=Box::new(get_workout_row_component) get_workouts_add_button_component=Box::new(get_workouts_add_button_component) div_id="content".to_owned()></ViewWorkoutsList>
+        <ViewWorkoutsList
+            workouts=workouts
+            get_workout_row_component=Box::new(get_workout_row_component)
+            get_workouts_add_button_component=Box::new(get_workouts_add_button_component)
+            div_id="content".to_owned()
+            get_workouts_back_button_component=Box::new(get_workouts_back_button_component)>
+        </ViewWorkoutsList>
     }
 }
 
@@ -78,8 +104,15 @@ pub fn ViewWorkoutsListForRoutine(
             <ButtonToNavigateToAddWorkoutFormForRoutineWorkouts routine_id=routine_id></ButtonToNavigateToAddWorkoutFormForRoutineWorkouts>
         }
     };
+    let get_workouts_back_button_component = move || view! {}.into_view();
     view! {
-        <ViewWorkoutsList workouts=workouts get_workout_row_component=Box::new(get_workout_row_component) get_workouts_add_button_component=Box::new(get_workouts_add_button_component) div_id="content".to_owned()></ViewWorkoutsList>
+        <ViewWorkoutsList
+            workouts=workouts
+            get_workout_row_component=Box::new(get_workout_row_component)
+            get_workouts_add_button_component=Box::new(get_workouts_add_button_component)
+            div_id="content".to_owned()
+            get_workouts_back_button_component=Box::new(get_workouts_back_button_component)>
+        </ViewWorkoutsList>
     }
 }
 
@@ -88,6 +121,7 @@ pub fn ViewWorkoutsList(
     workouts: HashMap<Uuid, Workout>,
     get_workout_row_component: Box<dyn Fn(Workout) -> View>,
     get_workouts_add_button_component: Box<dyn Fn() -> View>,
+    get_workouts_back_button_component: Box<dyn Fn() -> View>,
     div_id: String,
 ) -> impl IntoView {
     view! {
@@ -115,6 +149,7 @@ pub fn ViewWorkoutsList(
                     <td>
                         { get_workouts_add_button_component() }
                     </td>
+                    { get_workouts_back_button_component() }
                     </tr>
                 </tbody>
             </table>
@@ -152,7 +187,7 @@ pub fn ViewWorkoutsListRow(
 #[component]
 fn ButtonToNavigateToAddWorkoutFormForRoutineWorkouts(routine_id: Uuid) -> impl IntoView {
     view! {
-        <button class="btn" hx-get={format!("/routines/{routine_id}/workouts/add-workout-form")} hx-target="#content">
+        <button class="btn" hx-get={format!("/routines/{routine_id}/workouts/add-workout-form")} hx-push-url="true" hx-target="#content">
             View Workouts to Add To Routine
         </button>
     }
@@ -161,14 +196,14 @@ fn ButtonToNavigateToAddWorkoutFormForRoutineWorkouts(routine_id: Uuid) -> impl 
 #[component]
 fn ButtonToNavigateToAddWorkoutFormForGlobablWorkouts() -> impl IntoView {
     view! {
-        <button class="btn" hx-get="/workouts/add-workout-form" hx-target="#content">
+        <button class="btn" hx-get="/workouts/add-workout-form" hx-push-url="true" hx-target="#content">
             Add Workout
         </button>
     }
 }
 
 #[component]
-fn AddworkoutToRoutineWorkoutsListButton(routine_id: Uuid, workout_id: Uuid) -> impl IntoView {
+fn AddWorkoutToRoutineWorkoutsListButton(routine_id: Uuid, workout_id: Uuid) -> impl IntoView {
     view! {
         <button class="btn" hx-post={format!("/routines/{routine_id}/workouts/{workout_id}", routine_id = routine_id.to_string(), workout_id = workout_id.to_string())} hx-target="closest tr" hx-swap="outerHTML">
         Add Workout to routine
@@ -195,10 +230,19 @@ fn DeleteWorkoutFromGlobalWorkoutsListButton(workout_id: Uuid) -> impl IntoView 
 }
 
 #[component]
+fn ButtonToNavigateBackFromViewingWorkouts(resource_path: String) -> impl IntoView {
+    view! {
+        <button class="btn" hx-get={resource_path} hx-target="#content" hx-push-url="true" hx-swap="outerHTML">
+            Back
+        </button>
+    }
+}
+
+#[component]
 pub fn CreateWorkoutForm() -> impl IntoView {
     view! {
         <div id="content">
-            <form hx-post="/workouts" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML">
+            <form hx-post="/workouts" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML" hx-push-url="true">
                 <input hidden name="id" value={Uuid::new_v4().to_string()} type="text"></input>
                 <label>
                     Name

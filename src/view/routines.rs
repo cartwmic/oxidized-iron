@@ -32,8 +32,13 @@ pub fn ViewRoutinesList(routines: HashMap<Uuid, Routine>) -> impl IntoView {
                     />
                     <tr>
                     <td>
-                        <button class="btn" hx-get="/routines/add-routine-form" hx-target="#content">
+                        <button class="btn" hx-get="/routines/add-routine-form" hx-push-url="true" hx-target="#content">
                         Add
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn" hx-get="/" hx-push-url="true" hx-target="#content">
+                        Back
                         </button>
                     </td>
                     </tr>
@@ -81,7 +86,7 @@ pub fn ViewRoutine(routine: Routine) -> impl IntoView {
 pub fn CreateRoutineForm() -> impl IntoView {
     view! {
         <div id="content">
-            <form hx-post="/routines" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML">
+            <form hx-post="/routines" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML" hx-push-url="true">
                 <input hidden name="id" value={Uuid::new_v4().to_string()} type="text"></input>
                 <label>
                     Name
