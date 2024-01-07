@@ -1,4 +1,5 @@
 use axum::Router;
+use sqlx::postgres::PgPoolOptions;
 
 use std::{
     collections::HashMap,
@@ -13,8 +14,26 @@ pub mod external;
 pub mod utils;
 pub mod view;
 
+#[derive(Debug)]
+struct MyStruct {
+    a: Option<i32>,
+}
+
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), sqlx::Error> {
+    // test sqlx
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect("postgres://postgres:postgres@localhost:5432/oxidized-iron")
+        .await?;
+
+    let row: Vec<MyStruct> = sqlx::query_as!(MyStruct, "SELECT 150 as a")
+        .fetch_all(&pool)
+        .await?;
+
+    println!("{:?}", row);
+    // end test sqlx
+
     let routines = HashMap::new();
     let workouts = HashMap::new();
     let my_state = Arc::new(Mutex::new(MyState { routines, workouts }));
@@ -31,4 +50,6 @@ async fn main() {
         .unwrap();
 
     axum::serve(listener, app).await.unwrap();
+
+    Ok(())
 }

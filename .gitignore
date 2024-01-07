@@ -1,5 +1,7 @@
 **/target
 
+pgdata
+.env
 
 # Added by cargo
 

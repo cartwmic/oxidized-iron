@@ -1,0 +1,13 @@
+CREATE SCHEMA data AUTHORIZATION postgres;
+
+-- CREATE ROUTINE TABLE
+CREATE TABLE data.routine
+(
+    id BIGSERIAL NOT NULL,
+    name VARCHAR(250) NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
+ALTER TABLE data.routine
+ADD CONSTRAINT pk_data_id PRIMARY KEY (id);
