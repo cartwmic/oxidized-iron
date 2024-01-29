@@ -1,12 +1,9 @@
-use std::collections::HashMap;
-
 use leptos::*;
-use uuid::Uuid;
 
 use crate::{data::Routine, view::routine_workouts::ViewWorkoutsListForRoutine};
 
 #[component]
-pub fn ViewRoutinesList(routines: HashMap<Uuid, Routine>) -> impl IntoView {
+pub fn ViewRoutinesList(routines: Vec<Routine>) -> impl IntoView {
     view! {
         <div id="content">
             <p>Routines:</p>
@@ -23,8 +20,8 @@ pub fn ViewRoutinesList(routines: HashMap<Uuid, Routine>) -> impl IntoView {
                 <tbody>
                     <For
                         each=move || routines.clone()
-                        key=|(id, _)| id.clone()
-                        children=move |(_, routine): (Uuid, Routine)| {
+                        key=|routine| routine.id.clone()
+                        children=move |routine: Routine| {
                             view! {
                                 <ViewRoutinesListRow routine=routine></ViewRoutinesListRow>
                             }
@@ -77,7 +74,7 @@ pub fn ViewRoutine(routine: Routine) -> impl IntoView {
             <h2>Routine: { routine.name }</h2>
             <p>id: { routine.id.to_string() }</p>
             <p>description: { routine.description }</p>
-            <ViewWorkoutsListForRoutine workouts=routine.workouts.unwrap_or_else(|| HashMap::new()) routine_id=routine.id></ViewWorkoutsListForRoutine>
+            <ViewWorkoutsListForRoutine workouts=routine.workouts.unwrap_or_else(|| Vec::new()) routine_id=routine.id></ViewWorkoutsListForRoutine>
         </div>
     }
 }
@@ -87,7 +84,7 @@ pub fn CreateRoutineForm() -> impl IntoView {
     view! {
         <div id="content">
             <form hx-post="/routines" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML" hx-push-url="true">
-                <input hidden name="id" value={Uuid::new_v4().to_string()} type="text"></input>
+                <input hidden name="id" value={-1} type="text"></input>
                 <label>
                     Name
                     <input name="name" type="text"></input>

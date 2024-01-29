@@ -8,12 +8,12 @@ use axum::{
 };
 use leptos::*;
 
-use std::sync::{Arc, Mutex};
-
-use uuid::Uuid;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use crate::{
     data::Routine,
+    data::Workout,
     external::MyState,
     view::{
         head::Head,
@@ -38,10 +38,26 @@ pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
 
 pub async fn get_view_routine_component(
     my_state: State<Arc<Mutex<MyState>>>,
-    Path(routine_id): Path<Uuid>,
+    Path(routine_id): Path<i64>,
 ) -> impl IntoResponse {
-    let inner = my_state.lock().unwrap();
-    let routine = inner.routines.get(&routine_id).unwrap().clone();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
+
+    let routine: Routine = sqlx::query_as!(
+        Routine,
+        r#"
+            SELECT r.*, array_agg((w.*)) AS "workouts: Vec<Workout>"
+                FROM data.routine r
+                LEFT JOIN data.routine_workout rw ON r.id = rw.routine_id
+                LEFT JOIN data.workout w ON rw.workout_id = w.id
+                WHERE r.id = $1
+                GROUP BY r.id
+        "#,
+        routine_id
+    )
+    .fetch_one(pool)
+    .await
+    .unwrap();
 
     let html = leptos::ssr::render_to_string(|| {
         view! {
@@ -56,11 +72,23 @@ pub async fn get_view_routine_component(
 
 pub async fn delete_routine(
     my_state: State<Arc<Mutex<MyState>>>,
-    Path(routine_id): Path<Uuid>,
+    Path(routine_id): Path<i64>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    inner.routines.remove(&routine_id);
+    sqlx::query_as!(
+        Routine,
+        r#"
+            DELETE
+                FROM data.routine r
+                WHERE r.id = $1
+        "#,
+        routine_id
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     StatusCode::OK
 }
@@ -81,10 +109,32 @@ pub async fn create_routine_and_get_view_all_routines_component(
     my_state: State<Arc<Mutex<MyState>>>,
     Json(routine): Json<Routine>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    inner.routines.insert(routine.id, routine);
-    let routines = inner.routines.clone();
+    sqlx::query_as!(
+        Routine,
+        r#"
+            INSERT INTO data.routine (name, description)
+                VALUES ($1, $2)
+        "#,
+        routine.name,
+        routine.description
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
+
+    let routines: Vec<Routine> = sqlx::query_as!(
+        Routine,
+        r#"
+            SELECT *, NULL AS "workouts: Vec<Workout>"
+                FROM data.routine
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     let html = leptos::ssr::render_to_string(|| {
         view! {
@@ -100,9 +150,19 @@ pub async fn create_routine_and_get_view_all_routines_component(
 pub async fn get_view_all_routines_component(
     State(my_state): State<Arc<Mutex<MyState>>>,
 ) -> impl IntoResponse {
-    let inner = my_state.lock().unwrap();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    let routines = inner.routines.clone();
+    let routines: Vec<Routine> = sqlx::query_as!(
+        Routine,
+        r#"
+            SELECT *, NULL AS "workouts: Vec<Workout>"
+                FROM data.routine
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     let html = leptos::ssr::render_to_string(|| {
         view! {

@@ -1,16 +1,13 @@
-use std::collections::HashMap;
-
 use leptos::*;
-use uuid::Uuid;
 
 use crate::data::Workout;
 
 #[component]
 pub fn ViewGlobalWorkoutsListToAddToRoutine(
-    workouts: HashMap<Uuid, Workout>,
-    routine_id: Uuid,
+    workouts: Vec<Workout>,
+    routine_id: i64,
 ) -> impl IntoView {
-    let workout_row_add_button = move |workout_id: Uuid| {
+    let workout_row_add_button = move |workout_id: i64| {
         view! {
             <td>
                 <AddWorkoutToRoutineWorkoutsListButton workout_id=workout_id routine_id=routine_id></AddWorkoutToRoutineWorkoutsListButton>
@@ -46,8 +43,8 @@ pub fn ViewGlobalWorkoutsListToAddToRoutine(
 }
 
 #[component]
-pub fn ViewGlobalWorkoutsList(workouts: HashMap<Uuid, Workout>) -> impl IntoView {
-    let workout_row_delete_button = move |workout_id: Uuid| {
+pub fn ViewGlobalWorkoutsList(workouts: Vec<Workout>) -> impl IntoView {
+    let workout_row_delete_button = move |workout_id: i64| {
         view! {
             <td>
                 <DeleteWorkoutFromGlobalWorkoutsListButton workout_id=workout_id></DeleteWorkoutFromGlobalWorkoutsListButton>
@@ -84,7 +81,7 @@ pub fn ViewGlobalWorkoutsList(workouts: HashMap<Uuid, Workout>) -> impl IntoView
 
 #[component]
 pub fn ViewWorkoutsList(
-    workouts: HashMap<Uuid, Workout>,
+    workouts: Vec<Workout>,
     get_workout_row_component: Box<dyn Fn(Workout) -> View>,
     get_workouts_add_button_component: Box<dyn Fn() -> View>,
     get_workouts_back_button_component: Box<dyn Fn() -> View>,
@@ -106,8 +103,8 @@ pub fn ViewWorkoutsList(
                 <tbody>
                     <For
                         each=move || workouts.clone()
-                        key=|(id, _)| id.clone()
-                        children=move |(_, workout): (Uuid, Workout)| {
+                        key=|workout| workout.id.clone()
+                        children=move |workout: Workout| {
                             get_workout_row_component(workout)
                         }
                     />
@@ -126,8 +123,8 @@ pub fn ViewWorkoutsList(
 #[component]
 pub fn ViewWorkoutsListRow(
     workout: Workout,
-    maybe_workout_row_add_button: Option<Box<dyn Fn(Uuid) -> View>>,
-    maybe_workout_row_delete_button: Option<Box<dyn Fn(Uuid) -> View>>,
+    maybe_workout_row_add_button: Option<Box<dyn Fn(i64) -> View>>,
+    maybe_workout_row_delete_button: Option<Box<dyn Fn(i64) -> View>>,
 ) -> impl IntoView {
     let id = workout.id.to_string();
     view! {
@@ -151,7 +148,7 @@ pub fn ViewWorkoutsListRow(
 }
 
 #[component]
-pub fn ButtonToNavigateToAddWorkoutFormForRoutineWorkouts(routine_id: Uuid) -> impl IntoView {
+pub fn ButtonToNavigateToAddWorkoutFormForRoutineWorkouts(routine_id: i64) -> impl IntoView {
     view! {
         <button class="btn" hx-get={format!("/routines/{routine_id}/workouts/add-workout-form")} hx-push-url="true" hx-target="#content">
             View Workouts to Add To Routine
@@ -169,7 +166,7 @@ pub fn ButtonToNavigateToAddWorkoutFormForGlobablWorkouts() -> impl IntoView {
 }
 
 #[component]
-pub fn AddWorkoutToRoutineWorkoutsListButton(routine_id: Uuid, workout_id: Uuid) -> impl IntoView {
+pub fn AddWorkoutToRoutineWorkoutsListButton(routine_id: i64, workout_id: i64) -> impl IntoView {
     view! {
         <button class="btn" hx-post={format!("/routines/{routine_id}/workouts/{workout_id}", routine_id = routine_id.to_string(), workout_id = workout_id.to_string())} hx-target="closest tr" hx-swap="outerHTML">
         Add Workout to routine
@@ -179,8 +176,8 @@ pub fn AddWorkoutToRoutineWorkoutsListButton(routine_id: Uuid, workout_id: Uuid)
 
 #[component]
 pub fn DeleteWorkoutFromRoutineWorkoutsListButton(
-    workout_id: Uuid,
-    routine_id: Uuid,
+    workout_id: i64,
+    routine_id: i64,
 ) -> impl IntoView {
     view! {
         <button class="btn" hx-delete={format!("/routines/{routine_id}/workouts/{workout_id}")} hx-target="closest tr" hx-swap="outerHTML">
@@ -190,7 +187,7 @@ pub fn DeleteWorkoutFromRoutineWorkoutsListButton(
 }
 
 #[component]
-pub fn DeleteWorkoutFromGlobalWorkoutsListButton(workout_id: Uuid) -> impl IntoView {
+pub fn DeleteWorkoutFromGlobalWorkoutsListButton(workout_id: i64) -> impl IntoView {
     view! {
         <button class="btn" hx-delete={format!("/workouts/{workout_id}")} hx-target="closest tr" hx-swap="outerHTML">
             Delete Workout
@@ -212,7 +209,7 @@ pub fn CreateWorkoutForm() -> impl IntoView {
     view! {
         <div id="content">
             <form hx-post="/workouts" hx-target="#content" hx-ext="json-enc" hx-swap="outerHTML" hx-push-url="true">
-                <input hidden name="id" value={Uuid::new_v4().to_string()} type="text"></input>
+                <input hidden name="id" value={-1} type="text"></input>
                 <label>
                     Name
                     <input name="name" type="text"></input>

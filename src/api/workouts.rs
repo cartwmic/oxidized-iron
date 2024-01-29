@@ -8,11 +8,15 @@ use axum::{
 };
 use leptos::*;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-use uuid::Uuid;
-
-use crate::{data, external::MyState, view::head::*, view::workouts::*};
+use crate::{
+    data::{self, Workout},
+    external::MyState,
+    view::head::*,
+    view::workouts::*,
+};
 
 pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
     Router::new()
@@ -35,10 +39,32 @@ pub async fn add_workout_to_globabl_workouts_and_view_globabl_workouts_list_comp
     my_state: State<Arc<Mutex<MyState>>>,
     Json(workout): Json<data::Workout>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    inner.workouts.insert(workout.id, workout);
-    let workouts = inner.workouts.clone();
+    sqlx::query_as!(
+        Workout,
+        r#"
+            INSERT INTO data.workout (name, description)
+                VALUES ($1, $2)
+        "#,
+        workout.name,
+        workout.description
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
+
+    let workouts: Vec<Workout> = sqlx::query_as!(
+        Workout,
+        r#"
+            SELECT *
+                FROM data.workout
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     let html = leptos::ssr::render_to_string(|| {
         view! {
@@ -66,9 +92,19 @@ pub async fn get_component_for_adding_workout_to_globabl_workouts() -> impl Into
 pub async fn get_global_workouts_list_component(
     State(my_state): State<Arc<Mutex<MyState>>>,
 ) -> impl IntoResponse {
-    let inner = my_state.lock().unwrap();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    let workouts = inner.workouts.clone();
+    let workouts: Vec<Workout> = sqlx::query_as!(
+        Workout,
+        r#"
+            SELECT *
+                FROM data.workout
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     let html = leptos::ssr::render_to_string(|| {
         view! {
@@ -83,11 +119,23 @@ pub async fn get_global_workouts_list_component(
 
 pub async fn delete_workout_from_global_workouts(
     my_state: State<Arc<Mutex<MyState>>>,
-    Path(workout_id): Path<Uuid>,
+    Path(workout_id): Path<i64>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    inner.workouts.remove(&workout_id);
+    sqlx::query_as!(
+        Workout,
+        r#"
+            DELETE
+                FROM data.workout w
+                WHERE w.id = $1
+        "#,
+        workout_id
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     StatusCode::OK
 }

@@ -8,12 +8,10 @@ use axum::{
 };
 use leptos::*;
 
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-use uuid::Uuid;
+use crate::{data::Workout, external::MyState, view::head::*, view::workouts::*};
 
 pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
     Router::new()
@@ -31,14 +29,23 @@ pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
         )
 }
 
-use crate::{external::MyState, view::head::*, view::workouts::*};
-
 pub async fn get_component_for_adding_routine_to_workout(
     my_state: State<Arc<Mutex<MyState>>>,
-    Path(routine_id): Path<Uuid>,
+    Path(routine_id): Path<i64>,
 ) -> impl IntoResponse {
-    let inner = my_state.lock().unwrap();
-    let workouts = inner.workouts.clone();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
+
+    let workouts: Vec<Workout> = sqlx::query_as!(
+        Workout,
+        r#"
+            SELECT *
+                FROM data.workout
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     let html = leptos::ssr::render_to_string(move || {
         view! {
@@ -53,38 +60,47 @@ pub async fn get_component_for_adding_routine_to_workout(
 
 pub async fn add_workout_to_routine(
     my_state: State<Arc<Mutex<MyState>>>,
-    Path((routine_id, workout_id)): Path<(Uuid, Uuid)>,
+    Path((routine_id, workout_id)): Path<(i64, i64)>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
-    let workouts = inner.workouts.clone();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    inner
-        .routines
-        .get_mut(&routine_id)
-        .unwrap()
-        .workouts
-        .get_or_insert(HashMap::new())
-        .insert(
-            workout_id.clone(),
-            workouts.get(&workout_id).unwrap().clone(),
-        );
+    sqlx::query!(
+        r#"
+            INSERT INTO data.routine_workout (
+                                      routine_id, workout_id)
+                VALUES ($1, $2)
+        "#,
+        routine_id,
+        workout_id,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     StatusCode::OK.into_response()
 }
 
 pub async fn delete_workout_from_routine(
     my_state: State<Arc<Mutex<MyState>>>,
-    Path((routine_id, workout_id)): Path<(Uuid, Uuid)>,
+    Path((routine_id, workout_id)): Path<(i64, i64)>,
 ) -> impl IntoResponse {
-    let mut inner = my_state.lock().unwrap();
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
 
-    inner
-        .routines
-        .get_mut(&routine_id)
-        .unwrap()
-        .workouts
-        .get_or_insert(HashMap::new())
-        .remove(&workout_id);
+    sqlx::query!(
+        r#"
+            DELETE
+                FROM data.routine_workout rw
+                WHERE rw.routine_id = $1
+                    AND rw.workout_id = $2
+        "#,
+        routine_id,
+        workout_id
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap();
 
     StatusCode::OK.into_response()
 }

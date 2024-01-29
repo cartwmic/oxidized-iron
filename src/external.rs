@@ -1,10 +1,5 @@
-use std::collections::HashMap;
-
-use uuid::Uuid;
-
-use crate::data::{Routine, Workout};
+use sqlx::{Pool, Postgres};
 
 pub struct MyState {
-    pub routines: HashMap<Uuid, Routine>,
-    pub workouts: HashMap<Uuid, Workout>,
+    pub database_connection_pool: Pool<Postgres>,
 }

@@ -1,16 +1,10 @@
-use std::collections::HashMap;
-
 use leptos::*;
-use uuid::Uuid;
 
 use crate::{data::Workout, view::workouts::*};
 
 #[component]
-pub fn ViewWorkoutsListForRoutine(
-    workouts: HashMap<Uuid, Workout>,
-    routine_id: Uuid,
-) -> impl IntoView {
-    let workout_row_delete_button = move |workout_id: Uuid| {
+pub fn ViewWorkoutsListForRoutine(workouts: Vec<Workout>, routine_id: i64) -> impl IntoView {
+    let workout_row_delete_button = move |workout_id: i64| {
         view! {
             <td>
                 <DeleteWorkoutFromRoutineWorkoutsListButton workout_id=workout_id routine_id=routine_id></DeleteWorkoutFromRoutineWorkoutsListButton>

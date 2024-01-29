@@ -11,7 +11,8 @@ use axum::{
 };
 use leptos::*;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use crate::{external::MyState, view::index::Index};
 
