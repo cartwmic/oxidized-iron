@@ -1,16 +1,5 @@
--- Insert example routine
-INSERT INTO data.routine (name, description) 
-  VALUES ('RP - Push/Pull/Legs', 'Renaissance Periodization focused push/pull/legs routine');
-
--- Insert example workouts
-INSERT INTO data.workout (name, description) VALUES 
-  ('RP - Push', 'Renaissance Periodization focused push workout'),
-  ('RP - Pull', 'Renaissance Periodization focused pull workout'),
-  ('RP - Legs', 'Renaissance Periodization focused legs workout'),
-  ('Generic - Legs', 'Generic legs workout');
+-- Insert example reps
+INSERT INTO data.rep (kind, "set", notes) VALUES 
+  ('Normal', 10, 'slight twinge'),
+  ('Normal', 10, 'major pain');
     
--- Example attach workouts to a routine
-INSERT INTO data.routine_workout (routine_id, workout_id) VALUES
-  (1, 1),
-  (1, 2),
-  (1, 3);

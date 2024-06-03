@@ -4,13 +4,7 @@ use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::external::MyState;
-
-pub mod api;
-pub mod data;
-pub mod external;
-pub mod utils;
-pub mod view;
+use oxidized_iron::{api::get_router, external::MyState};
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
@@ -23,12 +17,7 @@ async fn main() -> Result<(), sqlx::Error> {
         database_connection_pool,
     }));
 
-    let app = Router::new()
-        .merge(api::get_router())
-        .merge(api::workouts::get_router())
-        .merge(api::routines::get_router())
-        .merge(api::routine_workouts::get_router())
-        .with_state(my_state);
+    let app = Router::new().merge(get_router()).with_state(my_state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
