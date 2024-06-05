@@ -11,21 +11,21 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::{
-    external::{get_reps, MyState},
-    view::{base, ViewGlobalRepsList, ViewRepsButton},
+    external::{get_lifting_log_entries, MyState},
+    view::{base, ViewLiftingLog, ViewLiftingLogButton},
 };
 
 pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
     Router::new()
         .route("/", get(index))
-        .route("/reps", get(get_reps_list))
+        .route("/lifting_log", get(get_lifting_log))
 }
 
 pub async fn index() -> impl IntoResponse {
     let html = render_to_string(|| {
         base(
             view! {
-                <ViewRepsButton></ViewRepsButton>
+                <ViewLiftingLogButton></ViewLiftingLogButton>
             }
             .into_view(),
         )
@@ -34,15 +34,15 @@ pub async fn index() -> impl IntoResponse {
     (StatusCode::OK, Html(html))
 }
 
-pub async fn get_reps_list(State(my_state): State<Arc<Mutex<MyState>>>) -> impl IntoResponse {
+pub async fn get_lifting_log(State(my_state): State<Arc<Mutex<MyState>>>) -> impl IntoResponse {
     let inner = my_state.lock().await;
     let pool = &inner.database_connection_pool;
 
-    let reps = get_reps(pool).await;
+    let lifting_log = get_lifting_log_entries(pool).await;
 
     let html = leptos::ssr::render_to_string(|| {
         base(view! {
-            <ViewGlobalRepsList reps=reps></ViewGlobalRepsList>
+            <ViewLiftingLog lifting_log=lifting_log></ViewLiftingLog>
         })
     })
     .to_string();

@@ -1,18 +1,18 @@
 use sqlx::{Pool, Postgres};
 
-use crate::data::Rep;
-use crate::data::RepKind;
+use crate::data::*;
 
 pub struct MyState {
     pub database_connection_pool: Pool<Postgres>,
 }
 
-pub async fn get_reps(pool: &Pool<Postgres>) -> Vec<Rep> {
+pub async fn get_lifting_log_entries(pool: &Pool<Postgres>) -> Vec<LiftingLogEntry> {
     sqlx::query_as!(
-        Rep,
+        LiftingLogEntry,
         r#"
-            SELECT id, kind AS "kind: RepKind", "set", notes, created_at, updated_at
-                FROM data.rep
+            SELECT id, rep_count, set_kind AS "set_kind: SetKind", rpe, exercise, workout, ROUTINE
+                  , created_at
+                FROM data.lifting_log_entry
         "#,
     )
     .fetch_all(pool)
