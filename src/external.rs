@@ -19,3 +19,16 @@ pub async fn get_lifting_log_entries(pool: &Pool<Postgres>) -> Vec<LiftingLogEnt
     .await
     .unwrap()
 }
+
+pub async fn get_exercises(pool: &Pool<Postgres>) -> Vec<Exercise> {
+    sqlx::query_as!(
+        Exercise,
+        r#"
+            SELECT id, name, implement AS "implement: Implement", created_at, updated_at
+                FROM data.exercise
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap()
+}
