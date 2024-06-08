@@ -2,7 +2,10 @@ use std::hash::Hash;
 
 use leptos::*;
 
-use crate::{data::LiftingLogEntry, GetTableData, GetUrlPrefix, TableData};
+use crate::{
+    data::{Exercise, LiftingLogEntry},
+    GetTableData, GetUrlPrefix, TableData,
+};
 
 pub fn base(content: View) -> impl IntoView {
     view! {
@@ -13,7 +16,7 @@ pub fn base(content: View) -> impl IntoView {
                 <script src="https://unpkg.com/htmx.org/dist/ext/head-support.js"></script>
             </head>
             <body>
-                <div id="content">
+                <div id={ crate::BASE_CONTENT_DIV_ID }>
                     { content }
                 </div>
             </body>
@@ -24,27 +27,34 @@ pub fn base(content: View) -> impl IntoView {
 #[component]
 pub fn ViewLiftingLogButton() -> impl IntoView {
     view! {
-        <button hx-get="/lifting_log" hx-push-url="true">View Lifting Log</button>
+        <button hx-get="/lifting_log" hx-push-url="true" hx-target={ crate::format_id_to_htmx_target_(crate::BASE_CONTENT_DIV_ID.to_string()) }>View Lifting Log</button>
     }
 }
 
 #[component]
 pub fn ViewLiftingLog(lifting_log: Vec<LiftingLogEntry>) -> impl IntoView {
-    let headers = vec![
-        "id".to_string(),
-        "rep_count".to_string(),
-        "set_kind".to_string(),
-        "rpe".to_string(),
-        "exercise".to_string(),
-        "workout".to_string(),
-        "routine".to_string(),
-        "created_at".to_string(),
-    ];
-    let table_data = TableData::new(headers, lifting_log);
+    let table_data = TableData::new(lifting_log);
     base_table(
         table_data,
         "lifting-log-table".to_string(),
         "Lifting Log".to_string(),
+    )
+}
+
+#[component]
+pub fn ViewExercisesButton() -> impl IntoView {
+    view! {
+        <button hx-get="/exercises" hx-push-url="true" hx-target={ crate::format_id_to_htmx_target_(crate::BASE_CONTENT_DIV_ID.to_string()) }>View Exercises</button>
+    }
+}
+
+#[component]
+pub fn ViewExercises(exercises: Vec<Exercise>) -> impl IntoView {
+    let table_data = TableData::new(exercises);
+    base_table(
+        table_data,
+        "exercise-table".to_string(),
+        "Exercises".to_string(),
     )
 }
 

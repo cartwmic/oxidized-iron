@@ -5,10 +5,18 @@ pub mod data;
 pub mod external;
 pub mod view;
 
+const BASE_CONTENT_DIV_ID: &str = "base-content";
+
+pub fn format_id_to_htmx_target_(id: String) -> String {
+    format!("#{id}")
+}
+
 pub trait GetTableData {
     fn get_table_data(&self) -> Vec<String>;
 
     fn get_data_id(&self) -> String;
+
+    fn get_headers() -> Vec<String>;
 }
 
 pub trait GetUrlPrefix {
@@ -22,7 +30,6 @@ where
     T: Hash,
     T: Eq,
     T: GetTableData,
-    T: GetUrlPrefix,
 {
     headers: Vec<String>,
     records: Vec<T>,
@@ -34,10 +41,10 @@ where
     T: Hash,
     T: Eq,
     T: GetTableData,
-    T: GetUrlPrefix,
 {
-    pub fn new(headers: Vec<String>, records: Vec<T>) -> TableData<T> {
-        if headers.is_empty() || records.is_empty() {
+    pub fn new(records: Vec<T>) -> TableData<T> {
+        let headers = T::get_headers();
+        if records.is_empty() {
             panic!()
         }
         if headers.len() != records.first().unwrap().get_table_data().len() {
