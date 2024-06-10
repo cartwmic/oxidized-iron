@@ -150,4 +150,39 @@ impl GetUrlPrefix for Exercise {
     }
 }
 
+impl GetTableData for Workout {
+    fn get_table_data(&self) -> Vec<String> {
+        vec![
+            self.id.to_string(),
+            self.name.to_string(),
+            self.description
+                .as_ref()
+                .get_or_insert(&"".to_string())
+                .to_string(),
+            self.created_at.to_string(),
+            self.updated_at.to_string(),
+        ]
+    }
+
+    fn get_data_id(&self) -> String {
+        self.id.to_string()
+    }
+
+    fn get_headers() -> Vec<String> {
+        vec![
+            "id".to_string(),
+            "name".to_string(),
+            "description".to_string(),
+            "created_at".to_string(),
+            "updated_at".to_string(),
+        ]
+    }
+}
+
+impl GetUrlPrefix for Workout {
+    fn get_url_prefix(&self) -> String {
+        "workouts".to_string()
+    }
+}
+
 // for nested objects, should try https://www.reddit.com/r/rust/comments/1bm8vep/comment/kwdb9tj/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button

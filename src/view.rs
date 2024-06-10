@@ -3,7 +3,7 @@ use std::hash::Hash;
 use leptos::*;
 
 use crate::{
-    data::{Exercise, LiftingLogEntry},
+    data::{Exercise, LiftingLogEntry, Workout},
     GetTableData, GetUrlPrefix, TableData,
 };
 
@@ -55,6 +55,23 @@ pub fn ViewExercises(exercises: Vec<Exercise>) -> impl IntoView {
         table_data,
         "exercise-table".to_string(),
         "Exercises".to_string(),
+    )
+}
+
+#[component]
+pub fn ViewWorkoutsButton() -> impl IntoView {
+    view! {
+        <button hx-get="/workouts" hx-push-url="true" hx-target={ crate::format_id_to_htmx_target_(crate::BASE_CONTENT_DIV_ID.to_string()) }>View Workouts</button>
+    }
+}
+
+#[component]
+pub fn ViewWorkouts(workouts: Vec<Workout>) -> impl IntoView {
+    let table_data = TableData::new(workouts);
+    base_table(
+        table_data,
+        "workout-table".to_string(),
+        "Workouts".to_string(),
     )
 }
 
