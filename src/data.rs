@@ -26,6 +26,8 @@ pub struct Workout {
 #[derive(Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
 pub struct Routine {
     pub id: i64,
+    pub name: String,
+    pub description: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
@@ -182,6 +184,41 @@ impl GetTableData for Workout {
 impl GetUrlPrefix for Workout {
     fn get_url_prefix(&self) -> String {
         "workouts".to_string()
+    }
+}
+
+impl GetTableData for Routine {
+    fn get_table_data(&self) -> Vec<String> {
+        vec![
+            self.id.to_string(),
+            self.name.to_string(),
+            self.description
+                .as_ref()
+                .get_or_insert(&"".to_string())
+                .to_string(),
+            self.created_at.to_string(),
+            self.updated_at.to_string(),
+        ]
+    }
+
+    fn get_data_id(&self) -> String {
+        self.id.to_string()
+    }
+
+    fn get_headers() -> Vec<String> {
+        vec![
+            "id".to_string(),
+            "name".to_string(),
+            "description".to_string(),
+            "created_at".to_string(),
+            "updated_at".to_string(),
+        ]
+    }
+}
+
+impl GetUrlPrefix for Routine {
+    fn get_url_prefix(&self) -> String {
+        "routines".to_string()
     }
 }
 

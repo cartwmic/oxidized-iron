@@ -15,7 +15,7 @@ use crate::{
     external::{get_lifting_log_entries, MyState},
     view::{
         base, ViewExercises, ViewExercisesButton, ViewLiftingLog, ViewLiftingLogButton,
-        ViewWorkouts, ViewWorkoutsButton,
+        ViewRoutines, ViewRoutinesButton, ViewWorkouts, ViewWorkoutsButton,
     },
 };
 
@@ -25,6 +25,7 @@ pub fn get_router() -> Router<Arc<Mutex<MyState>>> {
         .route("/lifting_log", get(get_lifting_log))
         .route("/exercises", get(get_exercises))
         .route("/workouts", get(get_workouts))
+        .route("/routines", get(get_routines))
 }
 
 pub async fn index() -> impl IntoResponse {
@@ -34,6 +35,7 @@ pub async fn index() -> impl IntoResponse {
                 <ViewLiftingLogButton></ViewLiftingLogButton>
                 <ViewExercisesButton></ViewExercisesButton>
                 <ViewWorkoutsButton></ViewWorkoutsButton>
+                <ViewRoutinesButton></ViewRoutinesButton>
             }
             .into_view(),
         )
@@ -83,6 +85,22 @@ pub async fn get_workouts(State(my_state): State<Arc<Mutex<MyState>>>) -> impl I
     let html = leptos::ssr::render_to_string(|| {
         base(view! {
             <ViewWorkouts workouts=workouts></ViewWorkouts>
+        })
+    })
+    .to_string();
+
+    (StatusCode::OK, Html(html))
+}
+
+pub async fn get_routines(State(my_state): State<Arc<Mutex<MyState>>>) -> impl IntoResponse {
+    let inner = my_state.lock().await;
+    let pool = &inner.database_connection_pool;
+
+    let routines = external::get_routines(pool).await;
+
+    let html = leptos::ssr::render_to_string(|| {
+        base(view! {
+            <ViewRoutines routines=routines></ViewRoutines>
         })
     })
     .to_string();

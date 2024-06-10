@@ -45,3 +45,16 @@ pub async fn get_workouts(pool: &Pool<Postgres>) -> Vec<Workout> {
     .await
     .unwrap()
 }
+
+pub async fn get_routines(pool: &Pool<Postgres>) -> Vec<Routine> {
+    sqlx::query_as!(
+        Routine,
+        r#"
+            SELECT *
+                FROM data.routine
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap()
+}
