@@ -16,3 +16,5 @@ chrono = { version = "0.4.*", features = ["serde"] }
 strum = "0.26.2"
 strum_macros = "0.26.3"
 derive_more = "0.99.17"
+async-trait = "0.1.80"
+axum-macros = "0.4.1"

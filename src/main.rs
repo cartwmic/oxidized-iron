@@ -1,10 +1,16 @@
 use axum::Router;
+use oxidized_iron::{
+    domain::{
+        exercise::ExerciseService, lifting_log_entry::LiftingLogService, routine::RoutineService,
+        workout::WorkoutService, DomainService,
+    },
+    driven::postgres_repo::PostgresRepository,
+    driving::htmx_handler::{get_router, HtmxState},
+};
 use sqlx::postgres::PgPoolOptions;
 
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
-use oxidized_iron::{api::get_router, external::MyState};
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
@@ -13,9 +19,26 @@ async fn main() -> Result<(), sqlx::Error> {
         .connect("postgres://postgres:postgres@localhost:5432/oxidized-iron")
         .await?;
 
-    let my_state = Arc::new(Mutex::new(MyState {
-        database_connection_pool,
-    }));
+    let database_repository = Arc::new(PostgresRepository {
+        database_connection_pool: Box::new(database_connection_pool),
+    });
+
+    let domain_service = DomainService {
+        lifting_log_entry_service: LiftingLogService {
+            database_repository: database_repository.clone(),
+        },
+        exercise_service: ExerciseService {
+            database_repository: database_repository.clone(),
+        },
+        routine_service: RoutineService {
+            database_repository: database_repository.clone(),
+        },
+        workout_service: WorkoutService {
+            database_repository: database_repository.clone(),
+        },
+    };
+
+    let my_state = Arc::new(Mutex::new(HtmxState { domain_service }));
 
     let app = Router::new().merge(get_router()).with_state(my_state);
 
