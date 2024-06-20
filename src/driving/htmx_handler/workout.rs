@@ -12,7 +12,7 @@ use axum::{
 use leptos::*;
 use tokio::sync::Mutex;
 
-use super::{base, base_table, HtmxState, TableData};
+use super::{base, base_table, GetTableData, GetUrlPrefix, HtmxState, TableData};
 
 pub async fn get_workouts(State(htmx_state): State<Arc<Mutex<HtmxState>>>) -> impl IntoResponse {
     let inner = htmx_state.lock().await;
@@ -32,7 +32,7 @@ pub async fn get_workouts(State(htmx_state): State<Arc<Mutex<HtmxState>>>) -> im
 #[component]
 pub fn ViewWorkoutsButton() -> impl IntoView {
     view! {
-        <button hx-get="/workout" hx-push-url="true" hx-target={ format_id_to_htmx_target_(BASE_CONTENT_DIV_ID.to_string()) }>View Lifting Log</button>
+        <button hx-get="/workouts" hx-push-url="true" hx-target={ format_id_to_htmx_target_(BASE_CONTENT_DIV_ID.to_string()) }>View Workouts</button>
     }
 }
 
@@ -44,4 +44,43 @@ pub fn ViewWorkouts(workouts: Vec<Workout>) -> impl IntoView {
         "workout-table".to_string(),
         "Workouts".to_string(),
     )
+}
+
+impl GetTableData for Workout {
+    fn get_table_data(&self) -> Vec<String> {
+        vec![
+            self.id.to_string(),
+            self.name.to_string(),
+            self.description
+                .as_ref()
+                .get_or_insert(&"".to_string())
+                .to_string(),
+            self.created_at.to_string(),
+            self.updated_at.to_string(),
+        ]
+    }
+
+    fn get_data_id(&self) -> String {
+        self.id.to_string()
+    }
+
+    fn get_headers() -> Vec<String> {
+        vec![
+            "id".to_string(),
+            "name".to_string(),
+            "description".to_string(),
+            "created_at".to_string(),
+            "updated_at".to_string(),
+        ]
+    }
+
+    fn get_human_readable_table_data(&self) -> Vec<String> {
+        self.get_table_data()
+    }
+}
+
+impl GetUrlPrefix for Workout {
+    fn get_url_prefix(&self) -> String {
+        "workouts".to_string()
+    }
 }

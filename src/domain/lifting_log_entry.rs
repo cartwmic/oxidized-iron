@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use derive_more::Display;
 
-use crate::{
-    driven::repository::Repository,
-    driving::htmx_handler::{GetTableData, GetUrlPrefix},
-};
+use crate::driven::repository::Repository;
 
 #[derive(sqlx::Type, Display, Clone)]
 #[sqlx(type_name = "set_kind")]
@@ -26,49 +23,6 @@ pub struct LiftingLogEntry {
     pub workout: i64,
     pub routine: i64,
     pub created_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl GetTableData for LiftingLogEntry {
-    fn get_table_data(&self) -> Vec<String> {
-        vec![
-            self.id.to_string(),
-            self.rep_count.to_string(),
-            self.set_kind.to_string(),
-            self.rpe.to_string(),
-            self.exercise.to_string(),
-            self.workout.to_string(),
-            self.routine.to_string(),
-            self.created_at.to_string(),
-        ]
-    }
-
-    fn get_data_id(&self) -> String {
-        self.id.to_string()
-    }
-
-    fn get_headers() -> Vec<String> {
-        vec![
-            "id".to_string(),
-            "rep_count".to_string(),
-            "set_kind".to_string(),
-            "rpe".to_string(),
-            "exercise".to_string(),
-            "workout".to_string(),
-            "routine".to_string(),
-            "created_at".to_string(),
-        ]
-    }
-
-    fn get_human_readable_table_data(&self) -> Vec<String> {
-        todo!() // trying to figure out dependency injection with hexagonal architecture before
-                // moving on here
-    }
-}
-
-impl GetUrlPrefix for LiftingLogEntry {
-    fn get_url_prefix(&self) -> String {
-        "lifting-log".to_string()
-    }
 }
 
 pub struct LiftingLogService {

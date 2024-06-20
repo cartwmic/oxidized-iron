@@ -13,7 +13,7 @@ use axum::{
 use leptos::*;
 use tokio::sync::Mutex;
 
-use super::{base, base_table, HtmxState, TableData};
+use super::{base, base_table, GetTableData, GetUrlPrefix, HtmxState, TableData};
 
 #[debug_handler]
 pub async fn get_lifting_log(State(htmx_state): State<Arc<Mutex<HtmxState>>>) -> impl IntoResponse {
@@ -46,4 +46,46 @@ pub fn ViewLiftingLog(lifting_log: Vec<LiftingLogEntry>) -> impl IntoView {
         "lifting-log-table".to_string(),
         "Lifting Log".to_string(),
     )
+}
+
+impl GetTableData for LiftingLogEntry {
+    fn get_table_data(&self) -> Vec<String> {
+        vec![
+            self.id.to_string(),
+            self.rep_count.to_string(),
+            self.set_kind.to_string(),
+            self.rpe.to_string(),
+            self.exercise.to_string(),
+            self.workout.to_string(),
+            self.routine.to_string(),
+            self.created_at.to_string(),
+        ]
+    }
+
+    fn get_data_id(&self) -> String {
+        self.id.to_string()
+    }
+
+    fn get_headers() -> Vec<String> {
+        vec![
+            "id".to_string(),
+            "rep_count".to_string(),
+            "set_kind".to_string(),
+            "rpe".to_string(),
+            "exercise".to_string(),
+            "workout".to_string(),
+            "routine".to_string(),
+            "created_at".to_string(),
+        ]
+    }
+
+    fn get_human_readable_table_data(&self) -> Vec<String> {
+        self.get_table_data()
+    }
+}
+
+impl GetUrlPrefix for LiftingLogEntry {
+    fn get_url_prefix(&self) -> String {
+        "lifting-log".to_string()
+    }
 }

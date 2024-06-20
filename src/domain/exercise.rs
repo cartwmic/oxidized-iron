@@ -2,10 +2,7 @@ use std::sync::Arc;
 
 use derive_more::Display;
 
-use crate::{
-    driven::repository::Repository,
-    driving::htmx_handler::{GetTableData, GetUrlPrefix},
-};
+use crate::driven::repository::Repository;
 
 #[derive(sqlx::Type, Display, Clone)]
 pub enum Implement {
@@ -24,42 +21,6 @@ pub struct Exercise {
     pub implement: Implement,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl GetTableData for Exercise {
-    fn get_table_data(&self) -> Vec<String> {
-        vec![
-            self.id.to_string(),
-            self.name.to_string(),
-            self.implement.to_string(),
-            self.created_at.to_string(),
-            self.updated_at.to_string(),
-        ]
-    }
-
-    fn get_data_id(&self) -> String {
-        self.id.to_string()
-    }
-
-    fn get_headers() -> Vec<String> {
-        vec![
-            "id".to_string(),
-            "name".to_string(),
-            "implement".to_string(),
-            "created_at".to_string(),
-            "updated_at".to_string(),
-        ]
-    }
-
-    fn get_human_readable_table_data(&self) -> Vec<String> {
-        self.get_table_data()
-    }
-}
-
-impl GetUrlPrefix for Exercise {
-    fn get_url_prefix(&self) -> String {
-        "exercises".to_string()
-    }
 }
 
 pub struct ExerciseService {
