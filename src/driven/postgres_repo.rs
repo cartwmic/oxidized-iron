@@ -3,8 +3,10 @@ use sqlx::{Pool, Postgres};
 
 use crate::{
     domain::{
-        exercise::Exercise, exercise::Implement, lifting_log_entry::LiftingLogEntry,
-        lifting_log_entry::SetKind, routine::Routine, workout::Workout,
+        exercise::{Exercise, Implement},
+        lifting_log_entry::{LiftingLogEntry, LiftingLogEntryWithForeignEntityNames, SetKind},
+        routine::Routine,
+        workout::Workout,
     },
     driven::repository::Repository,
 };
@@ -22,6 +24,25 @@ impl Repository for PostgresRepository {
                 SELECT id, rep_count, set_kind AS "set_kind: SetKind", rpe, exercise, workout, ROUTINE
                       , created_at
                     FROM data.lifting_log_entry
+        "#,
+        )
+        .fetch_all(&*self.database_connection_pool)
+        .await
+        .unwrap()
+    }
+
+    async fn get_lifting_log_entries_and_foreign_entity_names(
+        &self,
+    ) -> Vec<LiftingLogEntryWithForeignEntityNames> {
+        sqlx::query_as!(
+            LiftingLogEntryWithForeignEntityNames,
+            r#"
+                SELECT lle.id, rep_count, set_kind AS "set_kind: SetKind", rpe, e.name AS exercise
+                      , w.name AS workout, r.name AS ROUTINE, lle.created_at
+                    FROM data.lifting_log_entry lle
+                    JOIN data.exercise e ON lle.exercise = e.id
+                    JOIN data.workout w ON lle.workout = w.id
+                    JOIN data.routine r ON lle.routine = r.id
         "#,
         )
         .fetch_all(&*self.database_connection_pool)

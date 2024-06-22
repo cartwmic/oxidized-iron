@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    domain::lifting_log_entry::LiftingLogEntry,
+    domain::lifting_log_entry::LiftingLogEntryWithForeignEntityNames,
     driving::htmx_handler::{format_id_to_htmx_target_, BASE_CONTENT_DIV_ID},
 };
 use axum::{
@@ -19,12 +19,17 @@ use super::{base, base_table, GetTableData, GetUrlPrefix, HtmxState, TableData};
 pub async fn get_lifting_log(State(htmx_state): State<Arc<Mutex<HtmxState>>>) -> impl IntoResponse {
     let inner = htmx_state.lock().await;
     let domain_service = &inner.domain_service;
-    let lifting_log = domain_service.get_lifting_log_entries().await;
+    let lifting_log = TableData::new(domain_service.get_lifting_log_entries_for_table().await);
 
     let html = leptos::ssr::render_to_string(|| {
-        base(view! {
-            <ViewLiftingLog lifting_log=lifting_log></ViewLiftingLog>
-        })
+        base(
+            base_table(
+                lifting_log,
+                "lifting-log-table".to_string(),
+                "Lifting Log".to_string(),
+            )
+            .into_view(),
+        )
     })
     .to_string();
 
@@ -38,17 +43,7 @@ pub fn ViewLiftingLogButton() -> impl IntoView {
     }
 }
 
-#[component]
-pub fn ViewLiftingLog(lifting_log: Vec<LiftingLogEntry>) -> impl IntoView {
-    let table_data = TableData::new(lifting_log);
-    base_table(
-        table_data,
-        "lifting-log-table".to_string(),
-        "Lifting Log".to_string(),
-    )
-}
-
-impl GetTableData for LiftingLogEntry {
+impl GetTableData for LiftingLogEntryWithForeignEntityNames {
     fn get_table_data(&self) -> Vec<String> {
         vec![
             self.id.to_string(),
@@ -78,13 +73,9 @@ impl GetTableData for LiftingLogEntry {
             "created_at".to_string(),
         ]
     }
-
-    fn get_human_readable_table_data(&self) -> Vec<String> {
-        self.get_table_data()
-    }
 }
 
-impl GetUrlPrefix for LiftingLogEntry {
+impl GetUrlPrefix for LiftingLogEntryWithForeignEntityNames {
     fn get_url_prefix(&self) -> String {
         "lifting-log".to_string()
     }

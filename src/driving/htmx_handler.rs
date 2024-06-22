@@ -33,8 +33,6 @@ pub trait GetTableData {
     fn get_data_id(&self) -> String;
 
     fn get_headers() -> Vec<String>;
-
-    fn get_human_readable_table_data(&self) -> Vec<String>;
 }
 
 pub struct HtmxState {
@@ -152,7 +150,7 @@ pub fn base_table<T: GetTableData + GetUrlPrefix + Clone + 'static>(
                             view! {
                                 <tr>
                                     <For
-                                        each=move || record.get_human_readable_table_data().clone()
+                                        each=move || record.get_table_data().clone()
                                         key=|datum| datum.clone()
                                         children=move |datum: String| {
                                             view! {

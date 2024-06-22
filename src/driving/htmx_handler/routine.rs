@@ -73,10 +73,6 @@ impl GetTableData for Routine {
             "updated_at".to_string(),
         ]
     }
-
-    fn get_human_readable_table_data(&self) -> Vec<String> {
-        self.get_table_data()
-    }
 }
 
 impl GetUrlPrefix for Routine {

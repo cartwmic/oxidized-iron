@@ -6,7 +6,9 @@ pub mod workout;
 // for nested objects, should try https://www.reddit.com/r/rust/comments/1bm8vep/comment/kwdb9tj/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
 use exercise::{Exercise, ExerciseService};
-use lifting_log_entry::{LiftingLogEntry, LiftingLogService};
+use lifting_log_entry::{
+    LiftingLogEntry, LiftingLogEntryWithForeignEntityNames, LiftingLogService,
+};
 use routine::{Routine, RoutineService};
 use workout::{Workout, WorkoutService};
 
@@ -21,6 +23,14 @@ impl<'a> DomainService {
     pub async fn get_lifting_log_entries(&self) -> Vec<LiftingLogEntry> {
         self.lifting_log_entry_service
             .get_lifting_log_entries()
+            .await
+    }
+
+    pub async fn get_lifting_log_entries_for_table(
+        &self,
+    ) -> Vec<LiftingLogEntryWithForeignEntityNames> {
+        self.lifting_log_entry_service
+            .get_lifting_log_entries_and_foreign_entity_names()
             .await
     }
 

@@ -25,6 +25,18 @@ pub struct LiftingLogEntry {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
+#[derive(Clone)]
+pub struct LiftingLogEntryWithForeignEntityNames {
+    pub id: i64,
+    pub rep_count: i64,
+    pub set_kind: SetKind,
+    pub rpe: i64,
+    pub exercise: String,
+    pub workout: String,
+    pub routine: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
 pub struct LiftingLogService {
     pub database_repository: Arc<dyn Repository + Send + Sync>,
 }
@@ -32,5 +44,13 @@ pub struct LiftingLogService {
 impl<'a> LiftingLogService {
     pub async fn get_lifting_log_entries(&self) -> Vec<LiftingLogEntry> {
         self.database_repository.get_lifting_log_entries().await
+    }
+
+    pub async fn get_lifting_log_entries_and_foreign_entity_names(
+        &self,
+    ) -> Vec<LiftingLogEntryWithForeignEntityNames> {
+        self.database_repository
+            .get_lifting_log_entries_and_foreign_entity_names()
+            .await
     }
 }
