@@ -19,17 +19,12 @@ use super::{base, base_table, GetTableData, GetUrlPrefix, HtmxState, TableData};
 pub async fn get_lifting_log(State(htmx_state): State<Arc<Mutex<HtmxState>>>) -> impl IntoResponse {
     let inner = htmx_state.lock().await;
     let domain_service = &inner.domain_service;
-    let lifting_log = TableData::new(domain_service.get_lifting_log_entries_for_table().await);
+    let lifting_log = domain_service.get_lifting_log_entries_for_table().await;
 
     let html = leptos::ssr::render_to_string(|| {
-        base(
-            base_table(
-                lifting_log,
-                "lifting-log-table".to_string(),
-                "Lifting Log".to_string(),
-            )
-            .into_view(),
-        )
+        base(view! {
+            <ViewLiftingLogEntries lifting_log_entries=lifting_log></ViewLiftingLogEntries>
+        })
     })
     .to_string();
 
@@ -41,6 +36,18 @@ pub fn ViewLiftingLogButton() -> impl IntoView {
     view! {
         <button hx-get="/lifting_log" hx-push-url="true" hx-target={ format_id_to_htmx_target_(BASE_CONTENT_DIV_ID.to_string()) }>View Lifting Log</button>
     }
+}
+
+#[component]
+pub fn ViewLiftingLogEntries(
+    lifting_log_entries: Vec<LiftingLogEntryWithForeignEntityNames>,
+) -> impl IntoView {
+    let table_data = TableData::new(lifting_log_entries);
+    base_table(
+        table_data,
+        "lifting-log-table".to_string(),
+        "Lifting Log".to_string(),
+    )
 }
 
 impl GetTableData for LiftingLogEntryWithForeignEntityNames {
