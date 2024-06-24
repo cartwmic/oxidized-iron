@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     domain::exercise::Exercise,
-    driving::htmx_handler::{format_id_to_htmx_target_, BASE_CONTENT_DIV_ID},
+    driving::htmx_handler::{format_id_to_htmx_target_, TableDataHeader, BASE_CONTENT_DIV_ID},
 };
 use axum::{
     extract::State,
@@ -61,19 +61,34 @@ impl GetTableData for Exercise {
         self.id.to_string()
     }
 
-    fn get_headers() -> Vec<String> {
+    fn get_headers() -> Vec<TableDataHeader> {
         vec![
-            "id".to_string(),
-            "name".to_string(),
-            "implement".to_string(),
-            "created_at".to_string(),
-            "updated_at".to_string(),
+            TableDataHeader {
+                header: "id".to_string(),
+                value_is_editable: false,
+            },
+            TableDataHeader {
+                header: "name".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "implement".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "created_at".to_string(),
+                value_is_editable: false,
+            },
+            TableDataHeader {
+                header: "updated_at".to_string(),
+                value_is_editable: false,
+            },
         ]
     }
 }
 
 impl GetUrlPrefix for Exercise {
-    fn get_url_prefix(&self) -> String {
+    fn get_url_prefix() -> String {
         "exercises".to_string()
     }
 }

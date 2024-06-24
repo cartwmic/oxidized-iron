@@ -12,7 +12,7 @@ use axum::{
 use leptos::*;
 use tokio::sync::Mutex;
 
-use super::{base, base_table, GetTableData, GetUrlPrefix, HtmxState, TableData};
+use super::{base, base_table, GetTableData, GetUrlPrefix, HtmxState, TableData, TableDataHeader};
 
 pub async fn get_workouts(State(htmx_state): State<Arc<Mutex<HtmxState>>>) -> impl IntoResponse {
     let inner = htmx_state.lock().await;
@@ -64,19 +64,34 @@ impl GetTableData for Workout {
         self.id.to_string()
     }
 
-    fn get_headers() -> Vec<String> {
+    fn get_headers() -> Vec<TableDataHeader> {
         vec![
-            "id".to_string(),
-            "name".to_string(),
-            "description".to_string(),
-            "created_at".to_string(),
-            "updated_at".to_string(),
+            TableDataHeader {
+                header: "id".to_string(),
+                value_is_editable: false,
+            },
+            TableDataHeader {
+                header: "name".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "description".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "created_at".to_string(),
+                value_is_editable: false,
+            },
+            TableDataHeader {
+                header: "updated_at".to_string(),
+                value_is_editable: false,
+            },
         ]
     }
 }
 
 impl GetUrlPrefix for Workout {
-    fn get_url_prefix(&self) -> String {
+    fn get_url_prefix() -> String {
         "workouts".to_string()
     }
 }

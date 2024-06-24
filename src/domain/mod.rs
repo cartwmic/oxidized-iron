@@ -8,6 +8,7 @@ pub mod workout;
 use exercise::{Exercise, ExerciseService};
 use lifting_log_entry::{
     LiftingLogEntry, LiftingLogEntryWithForeignEntityNames, LiftingLogService,
+    NewLiftingLogEntryWithForeignEntityNames,
 };
 use routine::{Routine, RoutineService};
 use workout::{Workout, WorkoutService};
@@ -20,6 +21,24 @@ pub struct DomainService {
 }
 
 impl<'a> DomainService {
+    pub async fn add_lifting_log_entry(
+        &self,
+        new_lifting_log_entry: NewLiftingLogEntryWithForeignEntityNames,
+    ) -> LiftingLogEntry {
+        self.lifting_log_entry_service
+            .add_lifting_log_entry(new_lifting_log_entry)
+            .await
+    }
+
+    pub async fn get_lifting_log_entry_with_foreign_entity_names_by_id(
+        &self,
+        lifting_log_entry_id: i64,
+    ) -> LiftingLogEntryWithForeignEntityNames {
+        self.lifting_log_entry_service
+            .get_lifting_log_entry_with_foreign_entity_names_by_id(lifting_log_entry_id)
+            .await
+    }
+
     pub async fn get_lifting_log_entries(&self) -> Vec<LiftingLogEntry> {
         self.lifting_log_entry_service
             .get_lifting_log_entries()
@@ -31,6 +50,12 @@ impl<'a> DomainService {
     ) -> Vec<LiftingLogEntryWithForeignEntityNames> {
         self.lifting_log_entry_service
             .get_lifting_log_entries_and_foreign_entity_names()
+            .await
+    }
+
+    pub async fn delete_lifting_log_entry(&self, lifting_log_id: i64) -> () {
+        self.lifting_log_entry_service
+            .delete_lifting_log_entry(lifting_log_id)
             .await
     }
 

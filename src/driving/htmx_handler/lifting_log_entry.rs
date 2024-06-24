@@ -1,21 +1,62 @@
 use std::sync::Arc;
 
 use crate::{
-    domain::lifting_log_entry::LiftingLogEntryWithForeignEntityNames,
+    domain::lifting_log_entry::{
+        LiftingLogEntryWithForeignEntityNames, NewLiftingLogEntryWithForeignEntityNames,
+    },
     driving::htmx_handler::{format_id_to_htmx_target_, BASE_CONTENT_DIV_ID},
 };
 use axum::{
-    debug_handler,
-    extract::State,
+    extract::{Path, State},
     http::StatusCode,
     response::{Html, IntoResponse},
+    Form,
 };
 use leptos::*;
 use tokio::sync::Mutex;
 
-use super::{base, base_table, GetTableData, GetUrlPrefix, HtmxState, TableData};
+use super::{
+    base, base_add_row, base_table, render_table_row, GetTableData, GetUrlPrefix, HtmxState,
+    TableData, TableDataHeader,
+};
 
-#[debug_handler]
+pub async fn delete_lifting_log_entry(
+    Path(lifting_log_id): Path<i64>,
+    State(htmx_state): State<Arc<Mutex<HtmxState>>>,
+) -> impl IntoResponse {
+    let inner = htmx_state.lock().await;
+    let domain_service = &inner.domain_service;
+    domain_service
+        .delete_lifting_log_entry(lifting_log_id)
+        .await;
+
+    let html = "".to_string();
+
+    (StatusCode::OK, Html(html))
+}
+
+pub async fn add_lifting_log_entry(
+    State(htmx_state): State<Arc<Mutex<HtmxState>>>,
+    Form(new_lifting_log_entry): Form<NewLiftingLogEntryWithForeignEntityNames>,
+) -> impl IntoResponse {
+    let inner = htmx_state.lock().await;
+    let domain_service = &inner.domain_service;
+    let lifting_log_entry_id = domain_service
+        .add_lifting_log_entry(new_lifting_log_entry)
+        .await
+        .id;
+    let lifting_log_entry_with_foreign_entity_names = domain_service
+        .get_lifting_log_entry_with_foreign_entity_names_by_id(lifting_log_entry_id)
+        .await;
+
+    let html = leptos::ssr::render_to_string(|| {
+        render_table_row(lifting_log_entry_with_foreign_entity_names).into_view()
+    })
+    .to_string();
+
+    (StatusCode::OK, Html(html))
+}
+
 pub async fn get_lifting_log(State(htmx_state): State<Arc<Mutex<HtmxState>>>) -> impl IntoResponse {
     let inner = htmx_state.lock().await;
     let domain_service = &inner.domain_service;
@@ -31,10 +72,17 @@ pub async fn get_lifting_log(State(htmx_state): State<Arc<Mutex<HtmxState>>>) ->
     (StatusCode::OK, Html(html))
 }
 
+pub async fn get_add_lifting_log_row() -> impl IntoResponse {
+    let table_data: TableData<LiftingLogEntryWithForeignEntityNames> = TableData::new(vec![]);
+    let html = leptos::ssr::render_to_string(|| base_add_row(table_data).into_view()).to_string();
+
+    (StatusCode::OK, Html(html))
+}
+
 #[component]
 pub fn ViewLiftingLogButton() -> impl IntoView {
     view! {
-        <button hx-get="/lifting_log" hx-push-url="true" hx-target={ format_id_to_htmx_target_(BASE_CONTENT_DIV_ID.to_string()) }>View Lifting Log</button>
+        <button hx-get="/lifting-log" hx-push-url="true" hx-target={ format_id_to_htmx_target_(BASE_CONTENT_DIV_ID.to_string()) }>View Lifting Log</button>
     }
 }
 
@@ -68,22 +116,46 @@ impl GetTableData for LiftingLogEntryWithForeignEntityNames {
         self.id.to_string()
     }
 
-    fn get_headers() -> Vec<String> {
+    fn get_headers() -> Vec<TableDataHeader> {
         vec![
-            "id".to_string(),
-            "rep_count".to_string(),
-            "set_kind".to_string(),
-            "rpe".to_string(),
-            "exercise".to_string(),
-            "workout".to_string(),
-            "routine".to_string(),
-            "created_at".to_string(),
+            TableDataHeader {
+                header: "id".to_string(),
+                value_is_editable: false,
+            },
+            TableDataHeader {
+                header: "rep_count".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "set_kind".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "rpe".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "exercise".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "workout".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "routine".to_string(),
+                value_is_editable: true,
+            },
+            TableDataHeader {
+                header: "created_at".to_string(),
+                value_is_editable: false,
+            },
         ]
     }
 }
 
 impl GetUrlPrefix for LiftingLogEntryWithForeignEntityNames {
-    fn get_url_prefix(&self) -> String {
+    fn get_url_prefix() -> String {
         "lifting-log".to_string()
     }
 }

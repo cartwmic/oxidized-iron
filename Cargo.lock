@@ -1702,6 +1702,7 @@ dependencies = [
  "leptos_axum",
  "serde",
  "sqlx",
+ "sqlxinsert",
  "strum",
  "strum_macros",
  "tokio",
@@ -2588,6 +2589,18 @@ dependencies = [
  "tracing",
  "url",
  "urlencoding",
+]
+
+[[package]]
+name = "sqlxinsert"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70fabc5ed12c498984de1e89b7d343f0a24200586c3e245dd621381fc1680a2b"
+dependencies = [
+ "async-trait",
+ "quote",
+ "sqlx",
+ "syn 2.0.66",
 ]
 
 [[package]]
